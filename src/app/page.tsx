@@ -88,8 +88,8 @@ export default function Home() {
         <Logo />
         <nav className="hidden items-center gap-8 text-[15px] font-medium text-ink-soft md:flex">
           <a href="#como-funciona" className="hover:text-ink">Cómo funciona</a>
-          <a href="#preguntas" className="hover:text-ink">Precios</a>
-          <a href="#preguntas" className="hover:text-ink">Para arrendadores</a>
+          <a href="#precios" className="hover:text-ink">Precios</a>
+          <a href="#para-arrendadores" className="hover:text-ink">Para arrendadores</a>
         </nav>
         <div className="flex items-center gap-4">
           <Link href="/login" className="hidden text-[15px] font-semibold text-ink-soft hover:text-ink sm:block">
@@ -187,7 +187,7 @@ export default function Home() {
         </section>
 
         {/* Features */}
-        <section className="mx-auto max-w-6xl px-8 py-22 sm:px-16">
+        <section id="para-arrendadores" className="mx-auto max-w-6xl px-8 py-22 sm:px-16">
           <h2 className="mb-14 text-center text-4xl font-bold tracking-tight">
             Todo lo que necesita para cobrar arriendo
           </h2>
@@ -199,6 +199,18 @@ export default function Home() {
                 <p className="text-sm leading-relaxed text-ink-soft">{f.texto}</p>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* Precios */}
+        <section id="precios" className="border-t border-border bg-surface">
+          <div className="mx-auto max-w-3xl px-8 py-22 text-center sm:px-16">
+            <h2 className="text-4xl font-bold tracking-tight">Precios</h2>
+            <p className="mx-auto mt-4 max-w-lg text-[15px] leading-relaxed text-ink-soft">
+              Todavía estamos definiendo el modelo de precios mientras terminamos de construir el
+              sistema. Por ahora Rentia está en fase de prueba — cree su cuenta gratis y le
+              avisamos antes de que esto cambie.
+            </p>
           </div>
         </section>
 
