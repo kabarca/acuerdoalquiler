@@ -46,6 +46,46 @@ body {
   color: var(--ink);
 }
 
+/* ── Transiciones de Rentia ───────────────────────────────────────────── */
+@keyframes rt-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes rt-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes rt-logo-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
+    filter: blur(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+}
+@keyframes rt-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 h1,
 h2,
 h3,
