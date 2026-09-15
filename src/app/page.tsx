@@ -204,13 +204,48 @@ export default function Home() {
 
         {/* Precios */}
         <section id="precios" className="border-t border-border bg-surface">
-          <div className="mx-auto max-w-3xl px-8 py-22 text-center sm:px-16">
-            <h2 className="text-4xl font-bold tracking-tight">Precios</h2>
-            <p className="mx-auto mt-4 max-w-lg text-[15px] leading-relaxed text-ink-soft">
-              Todavía estamos definiendo el modelo de precios mientras terminamos de construir el
-              sistema. Por ahora Rentia está en fase de prueba — cree su cuenta gratis y le
-              avisamos antes de que esto cambie.
-            </p>
+          <div className="mx-auto max-w-6xl px-8 py-22 sm:px-16">
+            <div className="mb-14 flex flex-col items-center gap-3 text-center">
+              <span className="text-[13px] font-bold tracking-wide text-primary uppercase">Precios</span>
+              <h2 className="text-4xl font-bold tracking-tight">Simple, sin sorpresas</h2>
+              <p className="max-w-lg text-[15px] leading-relaxed text-ink-soft">
+                Rentia todavía está en fase de prueba, por eso el modelo de precios final no está
+                definido. Así se ve mientras tanto.
+              </p>
+            </div>
+
+            <div className="mx-auto flex max-w-sm flex-col gap-6 rounded-2xl border-2 border-primary bg-bg p-10 text-center">
+              <span className="mx-auto w-fit rounded-full bg-primary-light px-3.5 py-1.5 text-[12.5px] font-bold text-primary">
+                Fase de prueba
+              </span>
+              <div>
+                <span className="font-heading text-5xl font-bold">₡0</span>
+                <span className="text-ink-faint"> por ahora</span>
+              </div>
+              <ul className="flex flex-col gap-2.5 text-left text-[14.5px] text-ink-soft">
+                <li className="flex items-center gap-2.5">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M5 12.5l4.5 4.5 9.5-10"/></svg>
+                  Propiedades e inquilinos sin límite
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M5 12.5l4.5 4.5 9.5-10"/></svg>
+                  Facturas, recordatorios y alertas
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M5 12.5l4.5 4.5 9.5-10"/></svg>
+                  Sin costo de configuración
+                </li>
+              </ul>
+              <Link
+                href="/registro"
+                className="rounded-[10px] bg-primary px-6 py-3 text-[15px] font-semibold text-white hover:bg-primary-dark"
+              >
+                Crear cuenta gratis
+              </Link>
+              <p className="text-xs text-ink-faint">
+                Le avisaremos antes de que esto cambie — nada de cobros sorpresa.
+              </p>
+            </div>
           </div>
         </section>
 
