@@ -5,9 +5,11 @@ import { getArrendadorActual } from "@/lib/auth";
 import {
   crearInquilino,
   actualizarInquilino,
-  eliminarInquilino,
   eliminarPropiedad,
   generarFacturaDePrueba,
+  marcarFacturaAtrasadaDePrueba,
+  abrirDisputaDePrueba,
+  invitarInquilino,
 } from "../../actions";
 
 const inputClass =
@@ -23,12 +25,20 @@ const ESTADO_LABEL: Record<string, string> = {
   PENDIENTE: "Pendiente",
   PAGADA: "Pagado",
   ATRASADA: "Vencido",
+  EN_REVISION: "En revisión",
 };
 
 const ESTADO_TONO: Record<string, string> = {
   PENDIENTE: "bg-warning-bg text-warning",
   PAGADA: "bg-success-bg text-success",
   ATRASADA: "bg-danger-bg text-danger",
+  EN_REVISION: "bg-primary-light text-primary",
+};
+
+const METODO_LABEL: Record<string, string> = {
+  TRANSFERENCIA: "Transferencia bancaria",
+  DEBITO: "Tarjeta débito",
+  CREDITO: "Tarjeta crédito",
 };
 
 function iniciales(nombre: string) {
@@ -52,7 +62,8 @@ export default async function PropiedadDetallePage({
     where: { id, arrendadorId: arrendador.id },
     include: {
       inquilinos: {
-        include: { facturas: { orderBy: { periodo: "desc" } } },
+        where: { activo: true },
+        include: { facturas: { orderBy: { periodo: "desc" }, include: { disputa: true } } },
       },
     },
   });
@@ -65,6 +76,9 @@ export default async function PropiedadDetallePage({
   const hoy = new Date();
   const periodoActual = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}`;
   const facturaDelMes = inquilino?.facturas.find((f) => f.periodo === periodoActual);
+  const disputaActiva = facturaDelMes?.disputa && facturaDelMes.disputa.estado === "ABIERTA"
+    ? facturaDelMes.disputa
+    : null;
 
   return (
     <div className="flex flex-col gap-5.5 px-11 py-8">
@@ -98,6 +112,21 @@ export default async function PropiedadDetallePage({
         </div>
       </div>
 
+      {disputaActiva && (
+        <Link
+          href={`/dashboard/disputas/${disputaActiva.id}`}
+          className="flex items-center justify-between rounded-2xl border border-warning bg-warning-bg px-5.5 py-4"
+        >
+          <div className="flex items-center gap-3">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4 2.5 20.5h19L12 4Z"/><line x1="12" y1="10" x2="12" y2="15"/><line x1="12" y1="17.5" x2="12" y2="17.6"/></svg>
+            <span className="text-[14.5px] font-semibold text-warning">
+              Hay una disputa de pago abierta con {inquilino?.nombre}
+            </span>
+          </div>
+          <span className="text-[13.5px] font-semibold text-warning">Revisar →</span>
+        </Link>
+      )}
+
       <div className="flex flex-col gap-5.5 lg:flex-row">
         {/* Left: tenant & payment setup */}
         <div className="flex w-full flex-col gap-4.5 lg:w-[340px] lg:shrink-0">
@@ -124,6 +153,12 @@ export default async function PropiedadDetallePage({
                   <div className="flex justify-between">
                     <span className="text-ink-faint">Día de vencimiento</span>
                     <span className="font-semibold">Día {inquilino.diaCobro}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-ink-faint">Método guardado</span>
+                    <span className="font-semibold">
+                      {inquilino.metodoPagoPreferido ? METODO_LABEL[inquilino.metodoPagoPreferido] : "Sin configurar"}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-ink-faint">Inicio de contrato</span>
@@ -178,15 +213,39 @@ export default async function PropiedadDetallePage({
                   </form>
                 </details>
 
-                <form action={eliminarInquilino}>
-                  <input type="hidden" name="inquilinoId" value={inquilino.id} />
-                  <button type="submit" className="text-xs text-ink-faint hover:text-danger">
-                    Quitar inquilino
-                  </button>
-                </form>
+                <Link
+                  href={`/dashboard/propiedades/${propiedad.id}/quitar-inquilino`}
+                  className="text-xs text-ink-faint hover:text-danger"
+                >
+                  Quitar inquilino
+                </Link>
               </div>
 
-              {!facturaDelMes && (
+              <div className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5.5">
+                <p className="text-[14.5px] font-bold">Invitar a configurar el pago</p>
+                <p className="text-[13px] leading-relaxed text-ink-soft">
+                  Envíe a su inquilino un enlace para que registre su método de pago directamente.
+                </p>
+                <form action={invitarInquilino} className="flex flex-col gap-2.5">
+                  <input type="hidden" name="propiedadId" value={propiedad.id} />
+                  <input type="hidden" name="montoRenta" value={inquilino.montoRenta.toString()} />
+                  <input type="hidden" name="diaCobro" value={inquilino.diaCobro} />
+                  <input type="hidden" name="email" value={inquilino.email} />
+                  <button
+                    type="submit"
+                    className="rounded-[9px] bg-primary py-2.75 text-center text-[13.5px] font-bold text-white hover:bg-primary-dark"
+                  >
+                    {inquilino.invitacionEnviadaEn ? "Reenviar invitación" : "Enviar invitación"}
+                  </button>
+                </form>
+                {inquilino.invitacionEnviadaEn && (
+                  <p className="text-[12px] text-ink-faint">
+                    Enviada el {inquilino.invitacionEnviadaEn.toLocaleDateString("es-CR")}.
+                  </p>
+                )}
+              </div>
+
+              {!facturaDelMes ? (
                 <form action={generarFacturaDePrueba} className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5.5">
                   <p className="text-[14.5px] font-bold">Factura de este mes</p>
                   <p className="text-[13px] leading-relaxed text-ink-soft">
@@ -200,7 +259,27 @@ export default async function PropiedadDetallePage({
                     Generar factura
                   </button>
                 </form>
-              )}
+              ) : facturaDelMes.estado === "PENDIENTE" ? (
+                <form action={marcarFacturaAtrasadaDePrueba} className="flex flex-col gap-2 rounded-2xl border border-dashed border-border p-5">
+                  <p className="text-[12.5px] text-ink-faint">
+                    Prueba: simular que se pasó de la fecha de vencimiento.
+                  </p>
+                  <input type="hidden" name="facturaId" value={facturaDelMes.id} />
+                  <button type="submit" className="text-[13px] font-semibold text-accent text-left">
+                    Marcar como vencida (prueba) →
+                  </button>
+                </form>
+              ) : facturaDelMes.estado === "ATRASADA" && !disputaActiva ? (
+                <form action={abrirDisputaDePrueba} className="flex flex-col gap-2 rounded-2xl border border-dashed border-border p-5">
+                  <p className="text-[12.5px] text-ink-faint">
+                    Prueba: simular que el atraso escaló a una disputa.
+                  </p>
+                  <input type="hidden" name="facturaId" value={facturaDelMes.id} />
+                  <button type="submit" className="text-[13px] font-semibold text-accent text-left">
+                    Abrir disputa (prueba) →
+                  </button>
+                </form>
+              ) : null}
             </>
           ) : (
             <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-6">
@@ -251,6 +330,7 @@ export default async function PropiedadDetallePage({
                 <tr className="text-left text-xs font-bold tracking-wide text-ink-faint uppercase">
                   <th className="px-4.5 pb-2.5">Periodo</th>
                   <th className="px-4.5 pb-2.5">Monto</th>
+                  <th className="px-4.5 pb-2.5">Método</th>
                   <th className="px-4.5 pb-2.5">Fecha de pago</th>
                   <th className="px-4.5 pb-2.5">Estado</th>
                   <th className="px-4.5 pb-2.5"></th>
@@ -262,6 +342,9 @@ export default async function PropiedadDetallePage({
                     <td className="px-4.5 py-3.5">{f.periodo}</td>
                     <td className="px-4.5 py-3.5 font-semibold">₡{Number(f.monto).toLocaleString("es-CR")}</td>
                     <td className="px-4.5 py-3.5 text-ink-soft">
+                      {f.metodoPago ? METODO_LABEL[f.metodoPago] : "—"}
+                    </td>
+                    <td className="px-4.5 py-3.5 text-ink-soft">
                       {f.pagadoEn ? f.pagadoEn.toLocaleDateString("es-CR") : "—"}
                     </td>
                     <td className="px-4.5 py-3.5">
@@ -270,9 +353,15 @@ export default async function PropiedadDetallePage({
                       </span>
                     </td>
                     <td className="px-4.5 py-3.5 text-right">
-                      <Link href={`/pagar/${f.id}`} className="text-xs font-semibold text-accent">
-                        Ver →
-                      </Link>
+                      {f.estado === "EN_REVISION" ? (
+                        <Link href={`/dashboard/facturas/${f.id}/confirmar`} className="text-xs font-semibold text-accent">
+                          Revisar →
+                        </Link>
+                      ) : (
+                        <Link href={`/pagar/${f.id}`} className="text-xs font-semibold text-accent">
+                          Ver →
+                        </Link>
+                      )}
                     </td>
                   </tr>
                 ))}

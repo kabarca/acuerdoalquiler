@@ -17,6 +17,11 @@ model Arrendador {
   nombre         String
   email          String   @unique
   telefono       String?
+  // Datos bancarios que se le muestran al inquilino cuando paga por
+  // transferencia (ver TenantOnboarding / PaymentTransfer del diseño).
+  banco          String?
+  cuentaIban     String?
+  titularCuenta  String?
   creadoEn       DateTime @default(now())
 
   propiedades Propiedad[]
@@ -44,22 +49,38 @@ model Propiedad {
   @@map("propiedades")
 }
 
-// El inquilino NO tiene cuenta — solo recibe correos con el link de pago.
+enum MetodoPago {
+  TRANSFERENCIA
+  DEBITO
+  CREDITO
+}
+
+// El inquilino NO tiene cuenta — solo recibe correos con el link de pago,
+// salvo cuando el arrendador lo invita a configurar su propio método de
+// pago (ver InviteTenant / TenantOnboarding), momento en el que puede
+// autorizar compartir su historial de pago con otros arrendadores.
 model Inquilino {
-  id                  String    @id @default(uuid())
+  id                  String      @id @default(uuid())
   propiedadId         String
-  propiedad           Propiedad @relation(fields: [propiedadId], references: [id], onDelete: Cascade)
+  propiedad           Propiedad   @relation(fields: [propiedadId], references: [id], onDelete: Cascade)
   nombre              String
   email               String
   telefono            String?
-  montoRenta          Decimal   @db.Decimal(10, 2)
+  cedula              String? // identifica al inquilino entre arrendadores para la búsqueda de reputación
+  montoRenta          Decimal     @db.Decimal(10, 2)
   diaCobro            Int // día del mes en que se genera la factura (1-28)
   fechaInicioContrato DateTime?
-  fechaFinContrato    DateTime? // null = contrato indefinido / sigue vigente
-  activo              Boolean   @default(true)
-  creadoEn            DateTime  @default(now())
+  fechaFinContrato    DateTime? // se completa al quitar al inquilino, o null = sigue vigente
+  metodoPagoPreferido MetodoPago?
+  compartirHistorial  Boolean     @default(false) // opt-in explícito, ver TenantSearch
+  activo              Boolean     @default(true) // false = ya no es inquilino actual (se conserva para el historial)
+  motivoSalida        String? // ver RemoveTenantFeedback
+  notaSalida          String?
+  invitacionEnviadaEn DateTime?
+  creadoEn            DateTime    @default(now())
 
   facturas Factura[]
+  disputas Disputa[]
 
   @@map("inquilinos")
 }
@@ -68,6 +89,7 @@ enum EstadoFactura {
   PENDIENTE
   PAGADA
   ATRASADA
+  EN_REVISION // comprobante de transferencia subido, esperando que el arrendador lo confirme
 }
 
 model Factura {
@@ -78,13 +100,54 @@ model Factura {
   monto                    Decimal       @db.Decimal(10, 2)
   fechaVencimiento         DateTime
   estado                   EstadoFactura @default(PENDIENTE)
+  metodoPago               MetodoPago?
   onvopayPaymentId         String? // referencia del cobro en Onvopay
   onvopayPaymentLinkUrl    String?
+  // Comprobante de transferencia — se guarda en la propia base de datos
+  // (no hay bucket de almacenamiento configurado todavía).
+  comprobanteBytes         Bytes?
+  comprobanteTipo          String?
+  comprobanteNombre        String?
+  comprobanteSubidoEn      DateTime?
   recordatorioEnviadoEn    DateTime?
   avisoArrendadorEnviadoEn DateTime?
   pagadoEn                 DateTime?
   creadoEn                 DateTime      @default(now())
 
+  disputa Disputa?
+
   @@unique([inquilinoId, periodo])
   @@map("facturas")
+}
+
+enum EstadoDisputa {
+  ABIERTA
+  RESUELTA
+}
+
+enum ResolucionDisputa {
+  PRORROGA
+  MOROSO
+}
+
+// Se abre cuando una factura queda muy atrasada (ver DisputeNotification).
+// El arrendador la resuelve otorgando una prórroga o marcando al inquilino
+// como moroso (ver GrantExtension / MarkDelinquent / DisputeResolved).
+model Disputa {
+  id                  String             @id @default(uuid())
+  facturaId            String             @unique
+  factura              Factura            @relation(fields: [facturaId], references: [id], onDelete: Cascade)
+  inquilinoId          String
+  inquilino            Inquilino          @relation(fields: [inquilinoId], references: [id], onDelete: Cascade)
+  estado               EstadoDisputa      @default(ABIERTA)
+  motivoApertura       String
+  fechaApertura        DateTime           @default(now())
+  respuestaInquilino   String?
+  fechaRespuesta       DateTime?
+  resolucion           ResolucionDisputa?
+  motivoResolucion     String?
+  nuevaFechaVencimiento DateTime?
+  fechaResolucion      DateTime?
+
+  @@map("disputas")
 }

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getArrendadorActual } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { enviarInvitacion } from "@/lib/resend";
 
 function revalidarPanel() {
   revalidatePath("/dashboard", "layout");
@@ -124,13 +125,31 @@ export async function actualizarInquilino(formData: FormData) {
   revalidarPanel();
 }
 
-export async function eliminarInquilino(formData: FormData) {
+// Quita al inquilino con un motivo (ver RemoveTenantFeedback). Se conserva
+// la fila (activo=false) en vez de borrarla, para que su historial siga
+// contando en la reputación que ven otros arrendadores.
+export async function quitarInquilino(formData: FormData) {
   await getArrendadorActual();
-  const inquilinoId = formData.get("inquilinoId") as string;
 
-  await prisma.inquilino.delete({ where: { id: inquilinoId } });
+  const inquilinoId = formData.get("inquilinoId") as string;
+  const propiedadId = formData.get("propiedadId") as string;
+  const motivoSalida = formData.get("motivoSalida") as string;
+  const notaSalida = formData.get("notaSalida") as string;
+
+  const inquilino = await prisma.inquilino.findUniqueOrThrow({ where: { id: inquilinoId } });
+
+  await prisma.inquilino.update({
+    where: { id: inquilinoId },
+    data: {
+      activo: false,
+      fechaFinContrato: inquilino.fechaFinContrato ?? new Date(),
+      motivoSalida: motivoSalida || null,
+      notaSalida: notaSalida || null,
+    },
+  });
 
   revalidarPanel();
+  redirect(`/dashboard/propiedades/${propiedadId}`);
 }
 
 // Genera (o regenera) la factura del mes actual para un inquilino, sin
@@ -160,6 +179,197 @@ export async function generarFacturaDePrueba(formData: FormData) {
       periodo,
       monto: inquilino.montoRenta,
       fechaVencimiento,
+    },
+  });
+
+  revalidarPanel();
+}
+
+// Botón de prueba: marca la factura del mes como atrasada sin esperar al
+// cron, para poder probar el flujo de disputa.
+export async function marcarFacturaAtrasadaDePrueba(formData: FormData) {
+  await getArrendadorActual();
+  const facturaId = formData.get("facturaId") as string;
+
+  await prisma.factura.update({
+    where: { id: facturaId },
+    data: { estado: "ATRASADA" },
+  });
+
+  revalidarPanel();
+}
+
+export async function invitarInquilino(formData: FormData) {
+  const arrendador = await getArrendadorActual();
+
+  const propiedadId = formData.get("propiedadId") as string;
+  const email = formData.get("email") as string;
+  const montoRenta = formData.get("montoRenta") as string;
+  const diaCobro = Number(formData.get("diaCobro"));
+
+  const propiedad = await prisma.propiedad.findFirstOrThrow({
+    where: { id: propiedadId, arrendadorId: arrendador.id },
+    include: { inquilinos: { where: { activo: true } } },
+  });
+
+  const inquilino = propiedad.inquilinos[0];
+  if (!inquilino) {
+    throw new Error("Esta propiedad todavía no tiene inquilino — regístrelo primero.");
+  }
+
+  const actualizado = await prisma.inquilino.update({
+    where: { id: inquilino.id },
+    data: { email, montoRenta, diaCobro, invitacionEnviadaEn: new Date() },
+  });
+
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
+  try {
+    await enviarInvitacion({
+      paraEmail: actualizado.email,
+      nombreInquilino: actualizado.nombre,
+      direccionPropiedad: propiedad.direccion,
+      monto: Number(actualizado.montoRenta).toLocaleString("es-CR"),
+      linkInvitacion: `${baseUrl}/invitacion/${actualizado.id}`,
+    });
+  } catch {
+    // Resend todavía no está conectado (ver Configuración) — la invitación
+    // queda registrada y el link funciona igual, solo no se manda el correo.
+  }
+
+  revalidarPanel();
+  redirect(`/dashboard/propiedades/${propiedadId}`);
+}
+
+export async function abrirDisputaDePrueba(formData: FormData) {
+  await getArrendadorActual();
+  const facturaId = formData.get("facturaId") as string;
+
+  const factura = await prisma.factura.findUniqueOrThrow({
+    where: { id: facturaId },
+    include: { inquilino: true },
+  });
+
+  const dias = Math.max(
+    1,
+    Math.round((Date.now() - factura.fechaVencimiento.getTime()) / 86_400_000),
+  );
+
+  await prisma.disputa.upsert({
+    where: { facturaId },
+    update: {},
+    create: {
+      facturaId,
+      inquilinoId: factura.inquilinoId,
+      motivoApertura: `Venció el pago de ${factura.periodo} sin registrarse. Han transcurrido ${dias} día(s) desde la fecha de vencimiento.`,
+    },
+  });
+
+  revalidarPanel();
+}
+
+export async function registrarRespuestaInquilino(formData: FormData) {
+  await getArrendadorActual();
+  const disputaId = formData.get("disputaId") as string;
+  const respuesta = formData.get("respuestaInquilino") as string;
+
+  await prisma.disputa.update({
+    where: { id: disputaId },
+    data: { respuestaInquilino: respuesta, fechaRespuesta: new Date() },
+  });
+
+  revalidarPanel();
+}
+
+export async function otorgarProrroga(formData: FormData) {
+  await getArrendadorActual();
+
+  const disputaId = formData.get("disputaId") as string;
+  const nuevaFechaVencimiento = new Date(formData.get("nuevaFechaVencimiento") as string);
+  const nota = formData.get("nota") as string;
+
+  const disputa = await prisma.disputa.findUniqueOrThrow({ where: { id: disputaId } });
+
+  await prisma.$transaction([
+    prisma.disputa.update({
+      where: { id: disputaId },
+      data: {
+        estado: "RESUELTA",
+        resolucion: "PRORROGA",
+        motivoResolucion: nota || null,
+        nuevaFechaVencimiento,
+        fechaResolucion: new Date(),
+      },
+    }),
+    prisma.factura.update({
+      where: { id: disputa.facturaId },
+      data: { estado: "PENDIENTE", fechaVencimiento: nuevaFechaVencimiento },
+    }),
+  ]);
+
+  revalidarPanel();
+  redirect(`/dashboard/disputas/${disputaId}`);
+}
+
+export async function marcarMoroso(formData: FormData) {
+  await getArrendadorActual();
+
+  const disputaId = formData.get("disputaId") as string;
+  const motivo = formData.get("motivo") as string;
+
+  await prisma.disputa.update({
+    where: { id: disputaId },
+    data: {
+      estado: "RESUELTA",
+      resolucion: "MOROSO",
+      motivoResolucion: motivo,
+      fechaResolucion: new Date(),
+    },
+  });
+
+  revalidarPanel();
+  redirect(`/dashboard/disputas/${disputaId}`);
+}
+
+export async function confirmarComprobante(formData: FormData) {
+  await getArrendadorActual();
+  const facturaId = formData.get("facturaId") as string;
+
+  await prisma.factura.update({
+    where: { id: facturaId },
+    data: { estado: "PAGADA", pagadoEn: new Date(), metodoPago: "TRANSFERENCIA" },
+  });
+
+  revalidarPanel();
+}
+
+export async function rechazarComprobante(formData: FormData) {
+  await getArrendadorActual();
+  const facturaId = formData.get("facturaId") as string;
+
+  await prisma.factura.update({
+    where: { id: facturaId },
+    data: {
+      estado: "ATRASADA",
+      comprobanteBytes: null,
+      comprobanteTipo: null,
+      comprobanteNombre: null,
+      comprobanteSubidoEn: null,
+    },
+  });
+
+  revalidarPanel();
+}
+
+export async function actualizarDatosBancarios(formData: FormData) {
+  const arrendador = await getArrendadorActual();
+
+  await prisma.arrendador.update({
+    where: { id: arrendador.id },
+    data: {
+      banco: (formData.get("banco") as string) || null,
+      cuentaIban: (formData.get("cuentaIban") as string) || null,
+      titularCuenta: (formData.get("titularCuenta") as string) || null,
     },
   });
 

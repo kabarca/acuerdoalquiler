@@ -13,12 +13,14 @@ const ESTADO_LABEL: Record<string, string> = {
   PENDIENTE: "Pendiente",
   PAGADA: "Pagado",
   ATRASADA: "Vencido",
+  EN_REVISION: "En revisión",
 };
 
 const ESTADO_TONO: Record<string, string> = {
   PENDIENTE: "bg-warning-bg text-warning",
   PAGADA: "bg-success-bg text-success",
   ATRASADA: "bg-danger-bg text-danger",
+  EN_REVISION: "bg-primary-light text-primary",
 };
 
 function iniciales(nombre: string) {
@@ -37,6 +39,7 @@ export default async function PropiedadesPage() {
     where: { arrendadorId: arrendador.id },
     include: {
       inquilinos: {
+        where: { activo: true },
         include: { facturas: { orderBy: { periodo: "desc" }, take: 1 } },
       },
     },

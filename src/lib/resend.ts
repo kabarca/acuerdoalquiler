@@ -1,6 +1,10 @@
 import { Resend } from "resend";
 
-export const resend = new Resend(process.env.RESEND_API_KEY);
+// La cuenta real de Resend todavía no está conectada — la key vacía haría
+// que el SDK truene desde el import, así que se usa un placeholder cuando
+// no hay una real. Los envíos simplemente fallarán con un error de la API
+// hasta que se configure RESEND_API_KEY de verdad.
+export const resend = new Resend(process.env.RESEND_API_KEY || "re_sin_configurar");
 
 const REMITENTE = process.env.RESEND_FROM_EMAIL ?? "cobros@ejemplo.com";
 
@@ -146,6 +150,35 @@ export async function avisarArrendadorAtraso(params: {
     from: REMITENTE,
     to: params.paraEmail,
     subject: `Inquilino atrasado — ${params.direccionPropiedad}`,
+    html,
+  });
+}
+
+export async function enviarInvitacion(params: {
+  paraEmail: string;
+  nombreInquilino: string;
+  direccionPropiedad: string;
+  monto: string;
+  linkInvitacion: string;
+}) {
+  const html = envoltura(`
+    <div style="padding:32px;">
+      <h1 style="font-size:19px; margin:0 0 6px;">Configure el pago de su arriendo</h1>
+      <p style="color:${INK_SOFT}; font-size:14.5px; line-height:1.6;">
+        Hola ${params.nombreInquilino}, su arrendador le ha invitado a registrar su método de pago
+        para <strong>${params.direccionPropiedad}</strong> — ₡${params.monto} mensuales. Registre su
+        cuenta bancaria o tarjeta para activarlo.
+      </p>
+      <a href="${params.linkInvitacion}" style="display:block; margin-top:20px; background:${PRIMARY}; color:#fff; border-radius:10px; padding:15px; text-align:center; font-weight:700; font-size:15px; text-decoration:none;">
+        Configurar método de pago
+      </a>
+    </div>
+  `);
+
+  return resend.emails.send({
+    from: REMITENTE,
+    to: params.paraEmail,
+    subject: `Configure el pago de su arriendo — ${params.direccionPropiedad}`,
     html,
   });
 }
