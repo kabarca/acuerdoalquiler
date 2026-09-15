@@ -1,0 +1,82 @@
+// Esquema de datos del sistema de cobro de renta.
+// Ver CLAUDE.md para el flujo funcional completo.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Un arrendador = una cuenta (login vía Supabase Auth).
+model Arrendador {
+  id             String   @id @default(uuid())
+  supabaseUserId String   @unique
+  nombre         String
+  email          String   @unique
+  telefono       String?
+  creadoEn       DateTime @default(now())
+
+  propiedades Propiedad[]
+
+  @@map("arrendadores")
+}
+
+model Propiedad {
+  id           String     @id @default(uuid())
+  arrendadorId String
+  arrendador   Arrendador @relation(fields: [arrendadorId], references: [id], onDelete: Cascade)
+  direccion    String
+  creadoEn     DateTime   @default(now())
+
+  inquilinos Inquilino[]
+
+  @@map("propiedades")
+}
+
+// El inquilino NO tiene cuenta — solo recibe correos con el link de pago.
+model Inquilino {
+  id                  String    @id @default(uuid())
+  propiedadId         String
+  propiedad           Propiedad @relation(fields: [propiedadId], references: [id], onDelete: Cascade)
+  nombre              String
+  email               String
+  telefono            String?
+  montoRenta          Decimal   @db.Decimal(10, 2)
+  diaCobro            Int // día del mes en que se genera la factura (1-28)
+  fechaInicioContrato DateTime?
+  fechaFinContrato    DateTime? // null = contrato indefinido / sigue vigente
+  activo              Boolean   @default(true)
+  creadoEn            DateTime  @default(now())
+
+  facturas Factura[]
+
+  @@map("inquilinos")
+}
+
+enum EstadoFactura {
+  PENDIENTE
+  PAGADA
+  ATRASADA
+}
+
+model Factura {
+  id                       String        @id @default(uuid())
+  inquilinoId              String
+  inquilino                Inquilino     @relation(fields: [inquilinoId], references: [id], onDelete: Cascade)
+  periodo                  String // formato "YYYY-MM"
+  monto                    Decimal       @db.Decimal(10, 2)
+  fechaVencimiento         DateTime
+  estado                   EstadoFactura @default(PENDIENTE)
+  onvopayPaymentId         String? // referencia del cobro en Onvopay
+  onvopayPaymentLinkUrl    String?
+  recordatorioEnviadoEn    DateTime?
+  avisoArrendadorEnviadoEn DateTime?
+  pagadoEn                 DateTime?
+  creadoEn                 DateTime      @default(now())
+
+  @@unique([inquilinoId, periodo])
+  @@map("facturas")
+}
