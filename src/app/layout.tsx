@@ -24,6 +24,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="es"
       className={`${spaceGrotesk.variable} ${publicSans.variable} h-full antialiased`}
+      data-scroll-behavior="smooth"
     >
       <body className="flex min-h-full flex-col font-sans">{children}</body>
     </html>
