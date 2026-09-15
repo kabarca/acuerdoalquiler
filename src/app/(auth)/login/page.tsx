@@ -26,49 +26,52 @@ export default async function LoginPage({
   const { error } = await searchParams;
 
   return (
-    <div className="w-full max-w-sm">
-      <h1 className="text-xl font-semibold">Iniciar sesión</h1>
-      <p className="mt-1 text-sm text-muted">Entra a tu panel de arrendador.</p>
+    <div className="w-full max-w-[420px]">
+      <div className="flex flex-col gap-1.5">
+        <h1 className="text-[28px] font-semibold">Iniciar sesión</h1>
+        <p className="text-[15px] text-ink-soft">Entre a su panel de arrendador.</p>
+      </div>
 
       {error && (
-        <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error}
-        </p>
+        <p className="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-sm text-danger">{error}</p>
       )}
 
       <form action={login} className="mt-6 flex flex-col gap-4">
-        <label className="flex flex-col gap-1.5 text-sm font-medium">
-          Correo
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[13px] font-semibold text-ink-soft">Correo electrónico</label>
           <input
             name="email"
             type="email"
             required
-            className="rounded-lg border border-border px-3 py-2 text-sm font-normal outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+            placeholder="tucorreo@ejemplo.com"
+            className="w-full rounded-[10px] border-[1.5px] border-border px-3.5 py-3 text-[15px] outline-none focus:border-primary"
           />
-        </label>
-        <label className="flex flex-col gap-1.5 text-sm font-medium">
-          Contraseña
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[13px] font-semibold text-ink-soft">Contraseña</label>
           <input
             name="password"
             type="password"
             required
-            className="rounded-lg border border-border px-3 py-2 text-sm font-normal outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+            placeholder="••••••••"
+            className="w-full rounded-[10px] border-[1.5px] border-border px-3.5 py-3 text-[15px] outline-none focus:border-primary"
           />
-        </label>
+        </div>
+
         <button
           type="submit"
-          className="mt-2 rounded-lg bg-primary px-3 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-blue-700"
+          className="mt-2 w-full rounded-[10px] bg-primary py-3.5 text-[15px] font-semibold text-white transition-colors hover:bg-primary-dark"
         >
           Entrar
         </button>
-      </form>
 
-      <p className="mt-6 text-center text-sm text-muted">
-        ¿Todavía no tienes cuenta?{" "}
-        <Link href="/registro" className="font-medium text-primary hover:underline">
-          Regístrate
-        </Link>
-      </p>
+        <p className="text-center text-sm text-ink-soft">
+          ¿Todavía no tiene cuenta?{" "}
+          <Link href="/registro" className="font-semibold text-accent">
+            Regístrese
+          </Link>
+        </p>
+      </form>
     </div>
   );
 }

@@ -2,262 +2,231 @@ import Link from "next/link";
 
 const PASOS = [
   {
-    numero: "1",
-    titulo: "Registra tu propiedad y tu inquilino",
-    texto:
-      "Un formulario simple: dirección, nombre del inquilino, monto de la renta y el día en que se cobra cada mes.",
+    numero: "PASO 1",
+    titulo: "Registre su propiedad e inquilino",
+    texto: "Ingrese los datos de la propiedad, el inquilino y el monto mensual del arriendo.",
+    icono: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="3" width="12" height="18" rx="1"/><line x1="7.5" y1="7" x2="7.5" y2="7.1"/><line x1="12.5" y1="7" x2="12.5" y2="7.1"/><path d="M16 21v-6h4v6"/></svg>
+    ),
   },
   {
-    numero: "2",
-    titulo: "Le mandamos la factura y el link de pago",
-    texto:
-      "Tu inquilino recibe un correo con el detalle de la factura y un botón para pagar con tarjeta de débito o crédito.",
+    numero: "PASO 2",
+    titulo: "Su inquilino recibe la factura",
+    texto: "Recibe un correo con el detalle y un enlace para pagar por transferencia, débito o crédito.",
+    icono: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><line x1="2.5" y1="9.5" x2="21.5" y2="9.5"/><line x1="5.5" y1="14.5" x2="9.5" y2="14.5"/></svg>
+    ),
   },
   {
-    numero: "3",
-    titulo: "Tú ves todo desde un solo panel",
-    texto:
-      "Sabes al instante quién ya pagó, quién está pendiente y a quién hay que darle seguimiento.",
+    numero: "PASO 3",
+    titulo: "Usted visualiza el estado y recibe alertas",
+    texto: "Si el pago no se realiza a tiempo, se envía un recordatorio automático. Si la situación persiste, se le notifica a usted.",
+    icono: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 2 6H4c.5-.5 2-2 2-6Z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
+    ),
   },
 ];
 
-const BENEFICIOS = [
+const FEATURES = [
   {
-    titulo: "Pago con tarjeta, sin ir al banco",
-    texto:
-      "Tu inquilino paga con débito o crédito desde el celular, sin transferencias manuales ni comprobantes por WhatsApp.",
+    titulo: "Débito y crédito",
+    texto: "Su inquilino paga con el método que prefiera, sin transferencias manuales.",
+    icono: (
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><line x1="2.5" y1="9.5" x2="21.5" y2="9.5"/></svg>
+    ),
   },
   {
     titulo: "Recordatorios automáticos",
-    texto:
-      "Si el inquilino no ha pagado, el sistema le recuerda solo. Si el atraso se alarga, te avisamos a ti para que actúes a tiempo.",
+    texto: "Si el pago se atrasa, su inquilino recibe un recordatorio automático.",
+    icono: (
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 2 6H4c.5-.5 2-2 2-6Z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
+    ),
   },
   {
-    titulo: "Todo organizado en un solo lugar",
-    texto:
-      "Historial de facturas y pagos por propiedad e inquilino, sin hojas de cálculo ni mensajes perdidos.",
+    titulo: "Alertas si no pagan",
+    texto: "Pasado el plazo, usted recibe una notificación para tomar acción oportunamente.",
+    icono: (
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4 2.5 20.5h19L12 4Z"/><line x1="12" y1="10" x2="12" y2="15"/><line x1="12" y1="17.5" x2="12" y2="17.6"/></svg>
+    ),
+  },
+  {
+    titulo: "Panel simple",
+    texto: "Todas sus propiedades, inquilinos y pagos en una sola vista clara.",
+    icono: (
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/></svg>
+    ),
   },
 ];
 
-const PREGUNTAS = [
-  {
-    pregunta: "¿Cómo empiezo a cobrar el alquiler en línea?",
-    respuesta:
-      "Creas tu cuenta de arrendador, registras la propiedad y los datos de tu inquilino, y el sistema se encarga de mandar la factura cuando corresponda.",
-  },
-  {
-    pregunta: "¿Mi inquilino necesita crear una cuenta?",
-    respuesta:
-      "No. Tu inquilino solo recibe un correo con el link de pago y paga desde ahí, sin registrarse en nada.",
-  },
-  {
-    pregunta: "¿Cuánto cuesta usar RentaCR?",
-    respuesta:
-      "Todavía estamos definiendo el modelo de precios mientras terminamos de construir el sistema. Por ahora está en fase de prueba.",
-  },
-  {
-    pregunta: "¿Qué pasa si mi inquilino se atrasa?",
-    respuesta:
-      "El sistema le manda un recordatorio automático. Si el atraso sigue después de unos días, te avisamos a ti por correo para que puedas darle seguimiento a tiempo.",
-  },
+const RESUMEN = [
+  { propiedad: "Torres del Mar, Apto 8B, Santa Ana", detalle: "Camila Torres · vence 5 oct", estado: "Pagado", tono: "success" as const },
+  { propiedad: "Plaza Real, Local 12, Curridabat", detalle: "Andrés Ruiz · vence 10 oct", estado: "Pendiente", tono: "warning" as const },
+  { propiedad: "Barrio Dent, San José", detalle: "Laura Gómez · venció 28 sep", estado: "Vencido", tono: "danger" as const },
 ];
+
+const TONOS = {
+  success: "bg-success-bg text-success",
+  warning: "bg-warning-bg text-warning",
+  danger: "bg-danger-bg text-danger",
+};
+
+function Logo({ light = false }: { light?: boolean }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <div className={`flex h-8.5 w-8.5 items-center justify-center rounded-[9px] ${light ? "bg-white/15" : "bg-primary"}`}>
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="3" width="12" height="18" rx="1"/><path d="M16 21v-6h4v6"/></svg>
+      </div>
+      <span className="font-heading text-xl font-bold tracking-tight">Rentia</span>
+    </div>
+  );
+}
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="border-b border-border">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-4">
-          <span className="text-lg font-semibold tracking-tight">RentaCR</span>
-          <nav className="hidden items-center gap-6 text-sm text-muted sm:flex">
-            <a href="#como-funciona" className="hover:text-foreground">
-              Cómo funciona
-            </a>
-            <a href="#preguntas" className="hover:text-foreground">
-              Preguntas frecuentes
-            </a>
-          </nav>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="text-sm font-medium text-foreground hover:text-primary"
-            >
-              Iniciar sesión
-            </Link>
-            <Link
-              href="/registro"
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-blue-700"
-            >
-              Crear cuenta
-            </Link>
-          </div>
+    <div className="flex min-h-screen flex-col bg-bg">
+      <header className="flex items-center justify-between border-b border-border bg-surface px-8 py-5 sm:px-16">
+        <Logo />
+        <nav className="hidden items-center gap-8 text-[15px] font-medium text-ink-soft md:flex">
+          <a href="#como-funciona" className="hover:text-ink">Cómo funciona</a>
+          <a href="#preguntas" className="hover:text-ink">Precios</a>
+          <a href="#preguntas" className="hover:text-ink">Para arrendadores</a>
+        </nav>
+        <div className="flex items-center gap-4">
+          <Link href="/login" className="hidden text-[15px] font-semibold text-ink-soft hover:text-ink sm:block">
+            Iniciar sesión
+          </Link>
+          <Link
+            href="/registro"
+            className="rounded-[10px] bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark"
+          >
+            Crear cuenta gratis
+          </Link>
         </div>
       </header>
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="mx-auto grid w-full max-w-5xl grid-cols-1 items-center gap-12 px-6 py-16 lg:grid-cols-2 lg:py-24">
-          <div>
-            <span className="inline-block rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-muted">
-              Pagos
+        <section className="mx-auto flex max-w-6xl flex-col items-center gap-16 px-8 py-20 sm:px-16 lg:flex-row lg:py-24">
+          <div className="flex flex-1 flex-col gap-7">
+            <span className="w-fit rounded-full bg-primary-light px-3.5 py-2 text-[13px] font-semibold text-primary">
+              Pagos de arriendo con tarjeta, sin fricciones
             </span>
-            <h1 className="mt-4 text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
-              Cobra el alquiler{" "}
-              <span className="text-primary">sin perseguir a nadie</span>
+            <h1 className="text-[44px] leading-[1.08] font-bold tracking-tight sm:text-[56px]">
+              Cobre el arriendo por tarjeta, sin contratiempos.
             </h1>
-            <p className="mt-4 max-w-md text-balance text-muted">
-              Registra tu propiedad y tu inquilino una sola vez. Nosotros
-              mandamos la factura, cobramos con tarjeta y te avisamos si
-              alguien se atrasa — para arrendadores en Costa Rica.
+            <p className="max-w-lg text-lg leading-relaxed text-ink-soft">
+              Rentia envía la factura a su inquilino, gestiona el cobro por transferencia o
+              tarjeta, y le notifica automáticamente ante cualquier inconveniente. Usted se
+              enfoca en sus propiedades.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-2 flex flex-wrap items-center gap-3.5">
               <Link
                 href="/registro"
-                className="rounded-lg bg-primary px-6 py-3 text-center text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-blue-700"
+                className="flex items-center gap-2 rounded-[10px] bg-primary px-6 py-3.5 text-[15px] font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark"
               >
                 Crear cuenta gratis
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="12" x2="19" y2="12"/><path d="M13 6l6 6-6 6"/></svg>
               </Link>
-              <a
-                href="#como-funciona"
-                className="rounded-lg border border-border bg-surface px-6 py-3 text-center text-sm font-medium text-foreground transition-colors hover:bg-slate-50"
-              >
+              <a href="#como-funciona" className="rounded-[10px] border-[1.5px] border-border px-6 py-3.5 text-[15px] font-semibold text-ink hover:bg-surface">
                 Ver cómo funciona
               </a>
             </div>
+            <div className="mt-1 flex gap-7 text-sm text-ink-faint">
+              <span>Sin costo de configuración</span>
+              <span>·</span>
+              <span>Débito y crédito</span>
+            </div>
           </div>
 
-          <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
-            <p className="text-xs text-muted">condominio parques del sol</p>
-            <p className="text-sm font-medium">Factura de alquiler</p>
-            <div className="mt-4 rounded-xl bg-background p-4 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted">Inquilino</span>
-                <span>María Rojas</span>
+          <div className="flex flex-1 justify-center">
+            <div className="w-full max-w-[420px] overflow-hidden rounded-[20px] border border-border bg-surface shadow-[0_30px_60px_-20px_rgba(16,24,38,0.18)]">
+              <div className="flex items-center justify-between border-b border-border px-5.5 py-5">
+                <span className="text-[15px] font-bold">Sus propiedades</span>
+                <span className="text-xs text-ink-faint">Octubre 2026</span>
               </div>
-              <div className="mt-2 flex justify-between">
-                <span className="text-muted">Vence</span>
-                <span>28/9/2026</span>
+              <div className="flex flex-col">
+                {RESUMEN.map((r, i) => (
+                  <div
+                    key={r.propiedad}
+                    className={`flex items-center justify-between px-5.5 py-4 ${i < RESUMEN.length - 1 ? "border-b border-border" : ""}`}
+                  >
+                    <div>
+                      <p className="text-sm font-semibold">{r.propiedad}</p>
+                      <p className="mt-0.5 text-[13px] text-ink-faint">{r.detalle}</p>
+                    </div>
+                    <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${TONOS[r.tono]}`}>
+                      {r.estado}
+                    </span>
+                  </div>
+                ))}
               </div>
-              <div className="mt-2 flex justify-between">
-                <span className="text-muted">Estado</span>
-                <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-700">
-                  Pendiente
-                </span>
-              </div>
-              <div className="mt-4 flex justify-between border-t border-border pt-4 text-base font-medium">
-                <span>Monto</span>
-                <span>₡400 000</span>
-              </div>
-            </div>
-            <div className="mt-4 rounded-lg bg-primary px-3 py-3 text-center text-sm font-medium text-primary-foreground">
-              Pagar con tarjeta
             </div>
           </div>
         </section>
 
         {/* Cómo funciona */}
-        <section id="como-funciona" className="border-t border-border bg-surface">
-          <div className="mx-auto w-full max-w-5xl px-6 py-16">
-            <h2 className="text-2xl font-semibold sm:text-3xl">
-              Cóbralo en unos pasos simples
-            </h2>
-            <p className="mt-2 max-w-lg text-muted">
-              Cobrar el alquiler en línea es rápido y cómodo para los dos
-              lados — y te ayuda a mantener todo ordenado.
-            </p>
-
-            <div className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-3">
-              {PASOS.map((paso) => (
-                <div key={paso.numero}>
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
-                    {paso.numero}
-                  </span>
-                  <h3 className="mt-4 font-medium">{paso.titulo}</h3>
-                  <p className="mt-1 text-sm text-muted">{paso.texto}</p>
+        <section id="como-funciona" className="border-y border-border bg-surface">
+          <div className="mx-auto max-w-6xl px-8 py-22 sm:px-16">
+            <div className="mb-14 flex flex-col items-center gap-3 text-center">
+              <span className="text-[13px] font-bold tracking-wide text-primary uppercase">Cómo funciona</span>
+              <h2 className="text-4xl font-bold tracking-tight">Tres pasos, cero seguimiento manual</h2>
+            </div>
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
+              {PASOS.map((p) => (
+                <div key={p.numero} className="flex flex-col gap-4 rounded-2xl border border-border bg-bg p-8">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-light text-primary">
+                    {p.icono}
+                  </div>
+                  <span className="text-[13px] font-bold text-ink-faint">{p.numero}</span>
+                  <h3 className="text-xl font-semibold">{p.titulo}</h3>
+                  <p className="text-[15px] leading-relaxed text-ink-soft">{p.texto}</p>
                 </div>
               ))}
             </div>
-
-            <Link
-              href="/registro"
-              className="mt-10 inline-block rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-blue-700"
-            >
-              Empezar gratis
-            </Link>
           </div>
         </section>
 
-        {/* Beneficios */}
-        <section className="mx-auto w-full max-w-5xl px-6 py-16">
-          <h2 className="text-2xl font-semibold sm:text-3xl">
-            Fácil para arrendadores e inquilinos
+        {/* Features */}
+        <section className="mx-auto max-w-6xl px-8 py-22 sm:px-16">
+          <h2 className="mb-14 text-center text-4xl font-bold tracking-tight">
+            Todo lo que necesita para cobrar arriendo
           </h2>
-          <p className="mt-2 max-w-lg text-muted">
-            Pagar el alquiler cada mes — y cobrarlo — se vuelve más cómodo
-            para ambos.
-          </p>
-
-          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
-            {BENEFICIOS.map((b) => (
-              <div
-                key={b.titulo}
-                className="rounded-xl border border-border bg-surface p-5 shadow-sm"
-              >
-                <h3 className="font-medium">{b.titulo}</h3>
-                <p className="mt-2 text-sm text-muted">{b.texto}</p>
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {FEATURES.map((f) => (
+              <div key={f.titulo} className="flex flex-col gap-3">
+                {f.icono}
+                <h3 className="text-base font-semibold">{f.titulo}</h3>
+                <p className="text-sm leading-relaxed text-ink-soft">{f.texto}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* FAQ */}
-        <section id="preguntas" className="border-t border-border bg-surface">
-          <div className="mx-auto w-full max-w-3xl px-6 py-16">
-            <h2 className="text-2xl font-semibold sm:text-3xl">
-              Preguntas frecuentes
-            </h2>
-
-            <div className="mt-8 flex flex-col divide-y divide-border">
-              {PREGUNTAS.map((p) => (
-                <details key={p.pregunta} className="group py-4">
-                  <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium">
-                    {p.pregunta}
-                    <span className="ml-4 text-muted group-open:rotate-45 transition-transform">
-                      +
-                    </span>
-                  </summary>
-                  <p className="mt-2 text-sm text-muted">{p.respuesta}</p>
-                </details>
-              ))}
+        {/* CTA band */}
+        <section className="mx-auto max-w-6xl px-8 pb-22 sm:px-16">
+          <div className="flex flex-col items-center justify-between gap-6 rounded-3xl bg-primary px-10 py-14 text-center sm:flex-row sm:text-left">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight text-white">
+                Comience a cobrar sin contratiempos
+              </h2>
+              <p className="mt-2 text-[16px] text-primary-light/90">
+                Configure su primera propiedad en menos de 5 minutos.
+              </p>
             </div>
+            <Link
+              href="/registro"
+              className="shrink-0 rounded-[10px] bg-white px-6 py-3.5 text-[15px] font-semibold text-primary-dark"
+            >
+              Crear cuenta gratis
+            </Link>
           </div>
-        </section>
-
-        {/* CTA final */}
-        <section className="mx-auto w-full max-w-5xl px-6 py-16 text-center">
-          <h2 className="text-2xl font-semibold sm:text-3xl">
-            Empieza a cobrar el alquiler en línea hoy
-          </h2>
-          <Link
-            href="/registro"
-            className="mt-6 inline-block rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-blue-700"
-          >
-            Crear cuenta gratis
-          </Link>
         </section>
       </main>
 
-      <footer className="border-t border-border">
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-6 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
-          <span>RentaCR</span>
-          <div className="flex gap-4">
-            <Link href="/login" className="hover:text-foreground">
-              Iniciar sesión
-            </Link>
-            <Link href="/registro" className="hover:text-foreground">
-              Crear cuenta
-            </Link>
-          </div>
-          <span>© 2026 RentaCR</span>
+      <footer className="border-t border-border px-8 py-8 sm:px-16">
+        <div className="mx-auto flex max-w-6xl items-center justify-between">
+          <span className="font-heading text-base font-bold">Rentia</span>
+          <span className="text-[13px] text-ink-faint">© 2026 Rentia</span>
         </div>
       </footer>
     </div>

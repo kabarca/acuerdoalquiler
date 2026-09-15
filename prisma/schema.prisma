@@ -24,12 +24,20 @@ model Arrendador {
   @@map("arrendadores")
 }
 
+enum TipoPropiedad {
+  APARTAMENTO
+  CASA
+  LOCAL_COMERCIAL
+}
+
 model Propiedad {
-  id           String     @id @default(uuid())
+  id           String        @id @default(uuid())
   arrendadorId String
-  arrendador   Arrendador @relation(fields: [arrendadorId], references: [id], onDelete: Cascade)
+  arrendador   Arrendador    @relation(fields: [arrendadorId], references: [id], onDelete: Cascade)
   direccion    String
-  creadoEn     DateTime   @default(now())
+  tipo         TipoPropiedad @default(APARTAMENTO)
+  canton       String?
+  creadoEn     DateTime      @default(now())
 
   inquilinos Inquilino[]
 

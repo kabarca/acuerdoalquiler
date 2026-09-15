@@ -9,6 +9,11 @@ async function registrar(formData: FormData) {
   const nombre = formData.get("nombre") as string;
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+  const confirmar = formData.get("confirmar") as string;
+
+  if (password !== confirmar) {
+    redirect(`/registro?error=${encodeURIComponent("Las contraseñas no coinciden")}`);
+  }
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({ email, password });
@@ -36,61 +41,86 @@ export default async function RegistroPage({
   const { error } = await searchParams;
 
   return (
-    <div className="w-full max-w-sm">
-      <h1 className="text-xl font-semibold">Crear cuenta de arrendador</h1>
-      <p className="mt-1 text-sm text-muted">
-        Regístrate para empezar a cobrar el alquiler con tarjeta.
-      </p>
+    <div className="w-full max-w-[420px]">
+      <div className="flex flex-col gap-1.5">
+        <h1 className="text-[28px] font-semibold">Cree su cuenta de arrendador</h1>
+        <p className="text-[15px] text-ink-soft">
+          Gestione sus propiedades y cobre el arriendo por tarjeta.
+        </p>
+      </div>
 
       {error && (
-        <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error}
-        </p>
+        <p className="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-sm text-danger">{error}</p>
       )}
 
       <form action={registrar} className="mt-6 flex flex-col gap-4">
-        <label className="flex flex-col gap-1.5 text-sm font-medium">
-          Nombre
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[13px] font-semibold text-ink-soft">Nombre completo</label>
           <input
             name="nombre"
             type="text"
             required
-            className="rounded-lg border border-border px-3 py-2 text-sm font-normal outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+            placeholder="Ej. Mariana Solís"
+            className="w-full rounded-[10px] border-[1.5px] border-border px-3.5 py-3 text-[15px] outline-none focus:border-primary"
           />
-        </label>
-        <label className="flex flex-col gap-1.5 text-sm font-medium">
-          Correo
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[13px] font-semibold text-ink-soft">Correo electrónico</label>
           <input
             name="email"
             type="email"
             required
-            className="rounded-lg border border-border px-3 py-2 text-sm font-normal outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+            placeholder="tucorreo@ejemplo.com"
+            className="w-full rounded-[10px] border-[1.5px] border-border px-3.5 py-3 text-[15px] outline-none focus:border-primary"
           />
+        </div>
+        <div className="flex gap-3.5">
+          <div className="flex flex-1 flex-col gap-1.5">
+            <label className="text-[13px] font-semibold text-ink-soft">Contraseña</label>
+            <input
+              name="password"
+              type="password"
+              required
+              minLength={6}
+              placeholder="••••••••"
+              className="w-full rounded-[10px] border-[1.5px] border-border px-3.5 py-3 text-[15px] outline-none focus:border-primary"
+            />
+          </div>
+          <div className="flex flex-1 flex-col gap-1.5">
+            <label className="text-[13px] font-semibold text-ink-soft">Confirmar contraseña</label>
+            <input
+              name="confirmar"
+              type="password"
+              required
+              minLength={6}
+              placeholder="••••••••"
+              className="w-full rounded-[10px] border-[1.5px] border-border px-3.5 py-3 text-[15px] outline-none focus:border-primary"
+            />
+          </div>
+        </div>
+
+        <label className="mt-1 flex items-start gap-2.5">
+          <input type="checkbox" required className="mt-1 h-[18px] w-[18px] shrink-0 rounded-[5px] border-[1.5px] border-border accent-primary" />
+          <span className="text-[13px] leading-relaxed text-ink-soft">
+            Acepto los <span className="font-semibold text-accent">Términos de servicio</span> y la{" "}
+            <span className="font-semibold text-accent">Política de privacidad</span> de Rentia.
+          </span>
         </label>
-        <label className="flex flex-col gap-1.5 text-sm font-medium">
-          Contraseña
-          <input
-            name="password"
-            type="password"
-            required
-            minLength={6}
-            className="rounded-lg border border-border px-3 py-2 text-sm font-normal outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-          />
-        </label>
+
         <button
           type="submit"
-          className="mt-2 rounded-lg bg-primary px-3 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-blue-700"
+          className="mt-2 w-full rounded-[10px] bg-primary py-3.5 text-[15px] font-semibold text-white transition-colors hover:bg-primary-dark"
         >
           Crear cuenta
         </button>
-      </form>
 
-      <p className="mt-6 text-center text-sm text-muted">
-        ¿Ya tienes cuenta?{" "}
-        <Link href="/login" className="font-medium text-primary hover:underline">
-          Inicia sesión
-        </Link>
-      </p>
+        <p className="text-center text-sm text-ink-soft">
+          ¿Ya tiene una cuenta?{" "}
+          <Link href="/login" className="font-semibold text-accent">
+            Inicie sesión
+          </Link>
+        </p>
+      </form>
     </div>
   );
 }

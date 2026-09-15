@@ -4,24 +4,75 @@ export const resend = new Resend(process.env.RESEND_API_KEY);
 
 const REMITENTE = process.env.RESEND_FROM_EMAIL ?? "cobros@ejemplo.com";
 
+// Paleta de marca de Rentia, en variables ya resueltas (los clientes de
+// correo no soportan `var(--token)`).
+const INK = "#101826";
+const INK_SOFT = "#55637a";
+const INK_FAINT = "#8895a7";
+const BG = "#f5f8fb";
+const SURFACE = "#ffffff";
+const BORDER = "#e3e8f0";
+const PRIMARY = "#1f4e8c";
+const WARNING = "#a8660f";
+const WARNING_BG = "#fdf1de";
+const DANGER = "#b93a2b";
+const DANGER_BG = "#fbe9e6";
+
+function envoltura(contenido: string) {
+  return `
+    <div style="background:${BG}; padding:36px 0; font-family:'Public Sans', Arial, sans-serif; color:${INK};">
+      <div style="max-width:500px; margin:0 auto; background:${SURFACE}; border-radius:16px; border:1px solid ${BORDER}; overflow:hidden;">
+        <div style="padding:22px 32px; border-bottom:1px solid ${BORDER}; display:flex; align-items:center; gap:10px;">
+          <div style="width:26px; height:26px; border-radius:7px; background:${PRIMARY}; display:inline-block; text-align:center; line-height:26px;">
+            <span style="color:#fff; font-weight:700; font-size:13px;">R</span>
+          </div>
+          <span style="font-weight:700; font-size:15px; vertical-align:middle;">Rentia</span>
+        </div>
+        ${contenido}
+      </div>
+    </div>
+  `;
+}
+
 export async function enviarFactura(params: {
   paraEmail: string;
   nombreInquilino: string;
   direccionPropiedad: string;
   monto: string;
   fechaVencimiento: string;
+  periodo: string;
   linkPago: string;
 }) {
+  const html = envoltura(`
+    <div style="padding:32px;">
+      <div style="font-size:13px; color:${INK_FAINT}; font-weight:600;">FACTURA DE ARRIENDO · ${params.periodo.toUpperCase()}</div>
+      <h1 style="font-size:20px; margin:8px 0 6px;">Estimado(a) ${params.nombreInquilino}, tiene un pago pendiente</h1>
+      <p style="color:${INK_SOFT}; font-size:14.5px; line-height:1.6;">
+        Su arriendo de <strong>${params.direccionPropiedad}</strong> vence el <strong>${params.fechaVencimiento}</strong>.
+        Puede pagarlo en línea con tarjeta de débito o crédito.
+      </p>
+      <div style="background:${BG}; border-radius:12px; padding:18px 20px; margin-top:16px;">
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid ${BORDER}; font-size:14px;">
+          <span style="color:${INK_SOFT};">Propiedad</span><span style="font-weight:600;">${params.direccionPropiedad}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:8px 0; font-size:16px;">
+          <span style="font-weight:700;">Total a pagar</span><span style="font-weight:700;">₡${params.monto}</span>
+        </div>
+      </div>
+      <a href="${params.linkPago}" style="display:block; margin-top:20px; background:${PRIMARY}; color:#fff; border-radius:10px; padding:15px; text-align:center; font-weight:700; font-size:15px; text-decoration:none;">
+        Pagar ahora con tarjeta
+      </a>
+    </div>
+    <div style="padding:18px 32px; border-top:1px solid ${BORDER}; color:${INK_FAINT}; font-size:11.5px; text-align:center;">
+      Este correo fue enviado por Rentia en nombre de su arrendador.
+    </div>
+  `);
+
   return resend.emails.send({
     from: REMITENTE,
     to: params.paraEmail,
-    subject: `Factura de alquiler — ${params.direccionPropiedad}`,
-    html: `
-      <p>Hola ${params.nombreInquilino},</p>
-      <p>Este es el recordatorio de pago de tu alquiler en <strong>${params.direccionPropiedad}</strong>.</p>
-      <p>Monto: <strong>₡${params.monto}</strong><br/>Vence: ${params.fechaVencimiento}</p>
-      <p><a href="${params.linkPago}">Pagar ahora con tarjeta</a></p>
-    `,
+    subject: `Factura de arriendo — ${params.direccionPropiedad}`,
+    html,
   });
 }
 
@@ -30,32 +81,71 @@ export async function enviarRecordatorio(params: {
   nombreInquilino: string;
   direccionPropiedad: string;
   monto: string;
+  fechaVencimiento: string;
   linkPago: string;
 }) {
+  const html = envoltura(`
+    <div style="padding:32px;">
+      <div style="font-weight:700; font-size:13px; color:${WARNING};">RECORDATORIO DE PAGO</div>
+      <h1 style="font-size:19px; margin:8px 0 6px;">Su arriendo sigue pendiente</h1>
+      <p style="color:${INK_SOFT}; font-size:14.5px; line-height:1.6;">
+        Estimado(a) ${params.nombreInquilino}, el pago de su arriendo de <strong>${params.direccionPropiedad}</strong>
+        venció el ${params.fechaVencimiento}. Le recomendamos realizarlo hoy mismo para evitar que se notifique a
+        su arrendador.
+      </p>
+      <div style="background:${WARNING_BG}; border-radius:10px; padding:16px 18px; margin-top:12px;">
+        <span style="font-weight:700; font-size:18px;">₡${params.monto}</span>
+      </div>
+      <a href="${params.linkPago}" style="display:block; margin-top:20px; background:${PRIMARY}; color:#fff; border-radius:10px; padding:14px; text-align:center; font-weight:700; font-size:14.5px; text-decoration:none;">
+        Pagar ahora
+      </a>
+    </div>
+    <div style="padding:18px 32px; border-top:1px solid ${BORDER}; color:${INK_FAINT}; font-size:11.5px; text-align:center;">
+      Si ya realizó este pago, puede hacer caso omiso de este mensaje.
+    </div>
+  `);
+
   return resend.emails.send({
     from: REMITENTE,
     to: params.paraEmail,
-    subject: `Recordatorio: alquiler pendiente — ${params.direccionPropiedad}`,
-    html: `
-      <p>Hola ${params.nombreInquilino},</p>
-      <p>Todavía no hemos recibido el pago de tu alquiler (₡${params.monto}) en <strong>${params.direccionPropiedad}</strong>.</p>
-      <p><a href="${params.linkPago}">Pagar ahora con tarjeta</a></p>
-    `,
+    subject: `Recordatorio: arriendo pendiente — ${params.direccionPropiedad}`,
+    html,
   });
 }
 
 export async function avisarArrendadorAtraso(params: {
   paraEmail: string;
+  nombreArrendador: string;
   nombreInquilino: string;
   direccionPropiedad: string;
+  monto: string;
+  fechaVencimiento: string;
   diasAtraso: number;
 }) {
+  const html = envoltura(`
+    <div style="padding:32px;">
+      <div style="font-weight:700; font-size:13px; color:${DANGER};">ARRIENDO VENCIDO · REQUIERE SU ATENCIÓN</div>
+      <h1 style="font-size:19px; margin:8px 0 6px;">Su inquilino no ha realizado el pago del arriendo</h1>
+      <p style="color:${INK_SOFT}; font-size:14.5px; line-height:1.6;">
+        Estimado(a) ${params.nombreArrendador}, le informamos que <strong>${params.nombreInquilino}</strong> no ha
+        realizado el pago del arriendo correspondiente a <strong>${params.direccionPropiedad}</strong>. Han
+        transcurrido <strong>${params.diasAtraso} días</strong> desde la fecha de vencimiento.
+      </p>
+      <div style="background:${DANGER_BG}; border-radius:10px; padding:16px 18px; margin-top:12px; display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; justify-content:space-between; font-size:14px;">
+          <span>Monto pendiente</span><span style="font-weight:700;">₡${params.monto}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:14px;">
+          <span>Venció el</span><span style="font-weight:600;">${params.fechaVencimiento}</span>
+        </div>
+      </div>
+    </div>
+  `);
+
   return resend.emails.send({
     from: REMITENTE,
     to: params.paraEmail,
     subject: `Inquilino atrasado — ${params.direccionPropiedad}`,
-    html: `
-      <p>${params.nombreInquilino} lleva ${params.diasAtraso} días sin pagar el alquiler de ${params.direccionPropiedad}.</p>
-    `,
+    html,
   });
 }

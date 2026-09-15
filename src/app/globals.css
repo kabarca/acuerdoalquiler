@@ -2,28 +2,53 @@
 
 :root {
   color-scheme: light;
-  --background: #f8fafc;
+  --ink: #101826;
+  --ink-soft: #55637a;
+  --ink-faint: #8895a7;
+  --bg: #f5f8fb;
   --surface: #ffffff;
-  --foreground: #0f172a;
-  --muted: #64748b;
-  --border: #e2e8f0;
-  --primary: #2563eb;
-  --primary-foreground: #ffffff;
+  --border: #e3e8f0;
+  --primary: #1f4e8c;
+  --primary-dark: #143a6b;
+  --primary-light: #eaf1fb;
+  --accent: #2f6fed;
+  --success: #157a4d;
+  --success-bg: #e7f6ee;
+  --warning: #a8660f;
+  --warning-bg: #fdf1de;
+  --danger: #b93a2b;
+  --danger-bg: #fbe9e6;
 }
 
 @theme inline {
-  --color-background: var(--background);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-bg: var(--bg);
   --color-surface: var(--surface);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
   --color-border: var(--border);
   --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-light: var(--primary-light);
+  --color-accent: var(--accent);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --font-sans: var(--font-public-sans);
+  --font-heading: var(--font-space-grotesk);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--bg);
+  color: var(--ink);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
 }
