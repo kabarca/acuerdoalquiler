@@ -48,41 +48,60 @@ no las decisiones tomadas antes de esa fecha.
 7. El arrendador ve en su panel (barra lateral: Panel / Propiedades / Inquilinos / Pagos /
    Configuración) el estado de cada inquilino: pagado, pendiente, atrasado.
 
-## Ya construido (reconstruido 2026-09-17 sobre el diseño del artifact)
+## Ya construido (reconstruido 2026-09-15/17 sobre las 24 pantallas del artifact)
 
-- [x] Landing pública con hero, "cómo funciona", beneficios y CTA
-- [x] Registro/login de arrendadores (Supabase Auth) con panel de marca a la izquierda
-- [x] Panel (`/dashboard`): tarjetas de resumen (cobrado, pendientes, vencidos) + tabla combinada
-- [x] Propiedades en tarjetas (`/dashboard/propiedades`) con tipo, cantón, inquilino, badge de estado
+Landing, cuenta y panel principal:
+- [x] Landing pública con hero, "cómo funciona", beneficios y CTA (`Main`)
+- [x] Registro/login de arrendadores (Supabase Auth) con panel de marca a la izquierda (`Register`)
+- [x] Panel (`/dashboard`): tarjetas de resumen (cobrado, pendientes, vencidos) + tabla combinada (`Dashboard`)
+- [x] Propiedades en tarjetas (`/dashboard/propiedades`) con tipo, cantón, inquilino, badge de estado (`Properties`)
 - [x] Alta combinada de propiedad + inquilino + condiciones de pago en un solo formulario
-      (`/dashboard/propiedades/nueva`)
-- [x] Detalle de propiedad: tarjeta de inquilino + historial de pagos (`/dashboard/propiedades/[id]`)
-- [x] Páginas simples de Inquilinos y Pagos (listas across todas las propiedades) y Configuración
-      (estado de las integraciones)
-- [x] Página pública de pago para el inquilino (`/pagar/[facturaId]`), con estado "ya pagada"
-- [x] Generación manual de factura (botón "Generar factura") para probar el flujo sin esperar el cron
-- [x] Correos con el mismo lenguaje visual: factura, recordatorio, aviso al arrendador (`lib/resend.ts`)
+      (`/dashboard/propiedades/nueva`, `AddProperty`)
+- [x] Detalle de propiedad: tarjeta de inquilino + historial de pagos (`/dashboard/propiedades/[id]`, `PropertyDetail`)
+- [x] Configuración: datos de cuenta, cuenta bancaria (para transferencias), estado de integraciones
 
-## Pendiente del artifact (Fase 2 — NO construido todavía, confirmar con Thomas antes de empezar)
+Cobro e invitación al inquilino:
+- [x] Página pública de pago (`/pagar/[facturaId]`, `PaymentPage`) con pestañas transferencia/débito/crédito,
+      estados PAGADA / EN_REVISION / pendiente
+- [x] Pago por transferencia bancaria: el inquilino sube comprobante (`PaymentTransfer` → `TransferPending`),
+      el arrendador lo confirma o rechaza (`/dashboard/facturas/[id]/confirmar`, `LandlordConfirmPayment`) — el
+      archivo se guarda como bytes en la propia base de datos, servido por `/comprobante/[facturaId]`
+- [x] Invitar al inquilino a configurar su propio método de pago (`invitarInquilino` + correo) → pantalla
+      pública `/invitacion/[id]` (`TenantOnboarding`) donde elige método, ve los datos bancarios, pone su
+      cédula y autoriza (o no) compartir su historial
+- [x] Generación manual de factura y "marcar como vencida" (botones de prueba) para no depender del cron
+- [x] Correos con el mismo lenguaje visual: factura, recordatorio, aviso al arrendador, invitación (`lib/resend.ts`)
 
-El artifact tiene 24 pantallas; estas 8 amplían bastante el producto (screening/reputación de
-inquilinos, disputas, pago por transferencia con confirmación manual) y no estaban en el alcance
-original de este documento — preguntar a Thomas si las quiere ahora o después:
+Disputas y reputación:
+- [x] Al escalar un atraso se abre una `Disputa` (botón de prueba "Abrir disputa"); pantalla de disputa
+      abierta con opción de registrar la respuesta del inquilino (`/dashboard/disputas/[id]`, `DisputeNotification`)
+- [x] Otorgar prórroga (`.../prorroga`, `GrantExtension`) — reabre la factura con nueva fecha, cierra la disputa
+- [x] Marcar moroso (`.../moroso`, `MarkDelinquent`) — requiere motivo obligatorio y checkbox de confirmación
+- [x] Vista de disputa resuelta con línea de tiempo (`DisputeResolved`)
+- [x] Buscar inquilino por nombre/cédula entre TODOS los arrendadores (`/dashboard/inquilinos`, `TenantSearch`)
+      — solo aparecen los que autorizaron `compartirHistorial`
+- [x] Perfil de reputación agrupado por cédula: alquileres previos, disputas, historial de alquileres
+      (`/dashboard/inquilinos/[cedula]`, `TenantProfile`) — "Referencia completa por ₡8.000" queda visual/
+      deshabilitada, no hay cobro real de ese micro-pago
+- [x] Quitar inquilino con motivo de salida (`/dashboard/propiedades/[id]/quitar-inquilino`,
+      `RemoveTenantFeedback`) — es soft-delete (`activo=false`), NUNCA se borra la fila, para que su
+      historial de alquileres anteriores se siga viendo en su perfil de reputación
 
-- [ ] `TenantSearch` / `TenantProfile` — buscar inquilino y ver su "reputación" (historial de pago
-      entre propiedades, posiblemente cross-arrendador — implica modelo de datos nuevo)
-- [ ] `DisputeNotification` / `MarkDelinquent` / `GrantExtension` / `DisputeResolved` — flujo de
-      disputa cuando el inquilino reclama un cobro (marcar moroso, otorgar prórroga, resolver)
-- [ ] `RemoveTenantFeedback` — encuesta al quitar un inquilino
-- [ ] `PaymentTransfer` / `TransferPending` / `LandlordConfirmPayment` — pago por transferencia
-      bancaria con comprobante adjunto y confirmación manual del arrendador (alternativa a tarjeta)
-- [ ] `InviteTenant` / `TenantOnboarding` — invitar al inquilino a configurar su propio método de
-      pago guardado (en vez de que el arrendador registre todo)
-- [ ] Pago automático recurrente (toggle "Activar pago automático" visto en `PaymentPage`) — cobra
-      solo cada mes sin que el inquilino vuelva a pagar manualmente
+Pagos y reportes:
+- [x] Pagos y transacciones con estadísticas, filtros por rango (mes/90 días/año), exportar CSV real
+      (`/dashboard/pagos/exportar`) y certificado anual de ingresos imprimible (`/dashboard/pagos/certificado`,
+      botón "Imprimir / Guardar como PDF" — no genera un PDF binario, usa el diálogo de impresión del navegador)
 
-Los archivos fuente de las 24 pantallas están extraídos en `/tmp/rentia-design/*.dc.html` (no forman
-parte del repo — son solo referencia de una sesión anterior; si no existen, releer el artifact).
+## Fuera de alcance (deliberado, no es una pantalla del artifact)
+
+- Pago automático recurrente con tarjeta guardada (el toggle existe visualmente en `PaymentPage` pero no
+  está wireado — depende de que Onvopay esté conectado de verdad, con tokenización de tarjeta).
+- El microcobro de "Referencia completa por ₡8.000" en el perfil de reputación — no hay pasarela para
+  cobrar montos pequeños al propio arrendador todavía.
+
+Los archivos fuente de las 24 pantallas del artifact están (o estaban) extraídos en
+`/tmp/rentia-design/*.dc.html` — es un directorio temporal de una sesión anterior, no forma parte del
+repo; si ya no existen, releer el artifact en la URL de arriba.
 
 ## Procesador de pagos: Onvopay
 
@@ -122,11 +141,10 @@ un repositorio y proyecto totalmente separados, sin dependencias entre ambos:
 - Modelo de cobro del sistema: ¿suscripción al arrendador, comisión por transacción, o ninguna por
   ahora? (respondió "aún no lo sé, decidir después")
 - Después de cuántos días sin pagar se manda el recordatorio al inquilino, y después de cuántos días
-  más se le avisa al arrendador (el cron todavía no está implementado).
-- Si construir ahora las 8 pantallas de Fase 2 del artifact (disputas, reputación, transferencia
-  bancaria) o dejarlas para cuando haya arrendadores reales usando el sistema.
-- Si el pago por transferencia bancaria (ACH) debe ofrecerse desde ya o solo tarjeta por ahora — el
-  diseño lo muestra como opción pero no hay integración bancaria construida.
+  más se abre la disputa / se le avisa al arrendador (el cron todavía no está implementado — hoy son
+  botones manuales de prueba: "Marcar como vencida" y "Abrir disputa").
+- Si el pago por transferencia bancaria debe seguir ofreciéndose junto a tarjeta, o solo mientras
+  Onvopay no esté conectado.
 
 ## Credenciales de prueba (solo para desarrollo local)
 
