@@ -13,12 +13,6 @@ function Logo() {
   );
 }
 
-const OPCIONES = [
-  { valor: "TRANSFERENCIA", label: "Transferencia bancaria", costo: "sin costo" },
-  { valor: "DEBITO", label: "Tarjeta débito", costo: "₡3.500" },
-  { valor: "CREDITO", label: "Tarjeta crédito", costo: "2.9%" },
-] as const;
-
 export default async function InvitacionPage({
   params,
   searchParams,
@@ -76,28 +70,13 @@ export default async function InvitacionPage({
 
           <form action={confirmarMetodoPago} className="flex flex-col gap-5 px-8 py-7">
             <input type="hidden" name="inquilinoId" value={inquilino.id} />
+            <input type="hidden" name="metodoPagoPreferido" value="TRANSFERENCIA" />
 
             <div className="flex flex-col gap-2">
-              <label className="text-[13px] font-semibold text-ink-soft">Elija cómo desea pagar</label>
-              <div className="flex gap-2.5">
-                {OPCIONES.map((op, i) => (
-                  <label
-                    key={op.valor}
-                    className="flex-1 cursor-pointer rounded-[14px] border-[1.5px] border-border p-3.5 text-center text-[13px] font-semibold has-[:checked]:border-primary has-[:checked]:bg-primary-light has-[:checked]:text-primary"
-                  >
-                    <input
-                      type="radio"
-                      name="metodoPagoPreferido"
-                      value={op.valor}
-                      defaultChecked={i === 0}
-                      required
-                      className="sr-only"
-                    />
-                    {op.label}
-                    <br />
-                    <span className="text-[11.5px] font-medium opacity-75">{op.costo}</span>
-                  </label>
-                ))}
+              <label className="text-[13px] font-semibold text-ink-soft">Cómo va a pagar</label>
+              <div className="flex items-center gap-2.5 rounded-[14px] border-[1.5px] border-primary bg-primary-light p-3.5 text-[13px] font-semibold text-primary">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M4 10.5l8-6 8 6"/><path d="M5.5 10.5v8M18.5 10.5v8"/><path d="M3 21h18"/><path d="M9 14.5v3M15 14.5v3"/></svg>
+                Transferencia bancaria — sin costo
               </div>
             </div>
 
@@ -140,8 +119,7 @@ export default async function InvitacionPage({
             <div className="flex items-start gap-2.5 rounded-[10px] bg-bg px-4 py-3.5 text-[13px] leading-relaxed text-ink-soft">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0"><circle cx="12" cy="12" r="9.5"/><line x1="12" y1="8" x2="12" y2="8.1"/><line x1="12" y1="11" x2="12" y2="16"/></svg>
               Cada mes deberá transferir el monto a esta cuenta y subir el comprobante desde el link
-              de pago. Su arrendador confirmará el pago antes de que quede autorizado — el pago
-              automático solo está disponible con tarjeta (pendiente de conectar).
+              de pago. Su arrendador confirmará el pago antes de que quede autorizado.
             </div>
 
             <button

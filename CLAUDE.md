@@ -2,11 +2,18 @@
 
 ## Qué es este proyecto
 
-Un sistema para que arrendadores en Costa Rica puedan cobrarle el arriendo a sus inquilinos por
-tarjeta (débito o crédito), sin que el inquilino tenga que ir al banco o hacer transferencia manual.
-El arrendador registra su propiedad y su inquilino una sola vez; el sistema se encarga de mandar la
-factura, cobrar el link de pago, recordar si no han pagado, y avisarle al arrendador si el inquilino
-se atrasa demasiado.
+Un sistema para que arrendadores en Costa Rica puedan cobrarle el arriendo a sus inquilinos en línea,
+sin que el inquilino tenga que ir al banco a hacer una gestión presencial. El arrendador registra su
+propiedad y su inquilino una sola vez; el sistema se encarga de mandar la factura, el link de pago,
+recordar si no han pagado, y avisarle al arrendador si el inquilino se atrasa demasiado.
+
+**Método de pago (2026-09-16):** por ahora Rentia solo ofrece pago por **transferencia bancaria**
+(el inquilino transfiere y sube comprobante, el arrendador lo confirma). El cobro con tarjeta vía
+Onvopay sigue siendo el plan a futuro (ver sección Onvopay más abajo), pero está pausado — no se
+muestra como opción en ninguna pantalla mientras tanto. Si se reactiva, hay que revisar
+`pagar/[facturaId]/page.tsx` e `invitacion/[id]/page.tsx`, que se simplificaron para mostrar solo
+transferencia (el modelo de datos — enum `MetodoPago`, campos de Onvopay en `Factura` — se dejó
+intacto para no tener que rehacerlo).
 
 **Nombre del producto: Rentia.**
 
@@ -40,13 +47,13 @@ no las decisiones tomadas antes de esa fecha.
    (nombre, correo, teléfono, monto de la renta, día de vencimiento, fechas de contrato) en un solo
    formulario con indicador de pasos.
 3. Llegada la fecha de cobro, el sistema genera la factura y le manda al inquilino un correo con el
-   detalle y un link de pago (tarjeta débito o crédito).
+   detalle y un link de pago (transferencia bancaria, por ahora).
 4. El inquilino paga desde el link, sin necesidad de cuenta.
 5. Si el inquilino no ha pagado después de unos días, el sistema le manda un correo recordatorio.
 6. Si sigue sin pagar después de un periodo mayor (a definir), el sistema le avisa al arrendador por
    correo para que tome acción.
 7. El arrendador ve en su panel (barra lateral: Panel / Propiedades / Inquilinos / Pagos /
-   Configuración) el estado de cada inquilino: pagado, pendiente, atrasado.
+   Configuración / Ayuda) el estado de cada inquilino: pagado, pendiente, atrasado.
 
 ## Ya construido (reconstruido 2026-09-15/17 sobre las 24 pantallas del artifact)
 
@@ -61,8 +68,9 @@ Landing, cuenta y panel principal:
 - [x] Configuración: datos de cuenta, cuenta bancaria (para transferencias), estado de integraciones
 
 Cobro e invitación al inquilino:
-- [x] Página pública de pago (`/pagar/[facturaId]`, `PaymentPage`) con pestañas transferencia/débito/crédito,
-      estados PAGADA / EN_REVISION / pendiente
+- [x] Página pública de pago (`/pagar/[facturaId]`, `PaymentPage`) — solo transferencia bancaria por
+      ahora (débito/crédito quedaron pausados, ver nota de método de pago arriba), estados PAGADA /
+      EN_REVISION / pendiente
 - [x] Pago por transferencia bancaria: el inquilino sube comprobante (`PaymentTransfer` → `TransferPending`),
       el arrendador lo confirma o rechaza (`/dashboard/facturas/[id]/confirmar`, `LandlordConfirmPayment`) — el
       archivo se guarda como bytes en la propia base de datos, servido por `/comprobante/[facturaId]`
@@ -91,6 +99,20 @@ Pagos y reportes:
 - [x] Pagos y transacciones con estadísticas, filtros por rango (mes/90 días/año), exportar CSV real
       (`/dashboard/pagos/exportar`) y certificado anual de ingresos imprimible (`/dashboard/pagos/certificado`,
       botón "Imprimir / Guardar como PDF" — no genera un PDF binario, usa el diálogo de impresión del navegador)
+
+Soporte y administración (no forman parte del artifact, agregadas el 2026-09-16 a pedido de Thomas):
+- [x] `/dashboard/ayuda`: sección para que el arrendador contacte al soporte de Rentia por WhatsApp
+      (link `wa.me` con mensaje prellenado). El número vive en `src/lib/config.ts`
+      (`SOPORTE_WHATSAPP_NUMERO`) — **hoy es un número de relleno (`50600000000`), falta que Thomas
+      dé el número real de soporte.**
+- [x] `/admin`: panel interno solo para el equipo de Rentia (no para arrendadores) — muestra el total
+      de arrendadores, propiedades e inquilinos activos. Protegido por el campo `esAdmin` en
+      `Arrendador` (`false` por defecto, nunca se ofrece en el registro público) vía
+      `getAdminActual()` en `lib/auth.ts`; `proxy.ts`/`middleware.ts` también exige sesión para
+      `/admin` igual que para `/dashboard`. La cuenta de prueba (`arrendador@prueba.local`) se marcó
+      `esAdmin=true` a mano con `prisma db execute` para poder probarlo — una cuenta real de
+      arrendador nunca debería tener este campo en `true`. El sidebar del panel muestra un enlace
+      "Panel admin" solo si `esAdmin` es `true`.
 
 ## Fuera de alcance (deliberado, no es una pantalla del artifact)
 
@@ -143,8 +165,8 @@ un repositorio y proyecto totalmente separados, sin dependencias entre ambos:
 - Después de cuántos días sin pagar se manda el recordatorio al inquilino, y después de cuántos días
   más se abre la disputa / se le avisa al arrendador (el cron todavía no está implementado — hoy son
   botones manuales de prueba: "Marcar como vencida" y "Abrir disputa").
-- Si el pago por transferencia bancaria debe seguir ofreciéndose junto a tarjeta, o solo mientras
-  Onvopay no esté conectado.
+- **Número real de WhatsApp de soporte** para `SOPORTE_WHATSAPP_NUMERO` en `src/lib/config.ts` (hoy
+  tiene un número de relleno).
 
 ## Credenciales de prueba (solo para desarrollo local)
 
@@ -153,6 +175,7 @@ registro) para poder probar el sistema sin cuentas reales:
 
 - Correo: `arrendador@prueba.local`
 - Contraseña: `Prueba1234!`
+- Tiene `esAdmin=true`, así que con esta cuenta también se puede ver `/admin`.
 
 ## Git
 

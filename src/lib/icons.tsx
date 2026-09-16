@@ -55,3 +55,27 @@ export function IconAlert(props: { className?: string }) {
     </svg>
   );
 }
+
+export function IconBank(props: { className?: string }) {
+  return (
+    <svg {...props} width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 10.5l8-6 8 6" /><path d="M5.5 10.5v8M18.5 10.5v8" /><path d="M3 21h18" /><path d="M9 14.5v3M15 14.5v3" />
+    </svg>
+  );
+}
+
+export function IconHelp(props: { className?: string }) {
+  return (
+    <svg {...props} width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9.5" /><path d="M9.3 9.3a2.8 2.8 0 1 1 3.6 2.7c-.8.3-1.4 1-1.4 1.9v.3" /><line x1="12" y1="17" x2="12" y2="17.1" />
+    </svg>
+  );
+}
+
+export function IconShield(props: { className?: string }) {
+  return (
+    <svg {...props} width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3.5 5 6.5v5.2c0 4.6 3 7.9 7 8.8 4-.9 7-4.2 7-8.8V6.5L12 3.5Z" /><path d="M9 12l2 2 4-4.5" />
+    </svg>
+  );
+}

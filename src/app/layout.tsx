@@ -16,7 +16,7 @@ const publicSans = Public_Sans({
 
 export const metadata: Metadata = {
   title: "Rentia",
-  description: "Cobro de arriendo con tarjeta para arrendadores en Costa Rica",
+  description: "Cobro de arriendo por transferencia bancaria para arrendadores en Costa Rica",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

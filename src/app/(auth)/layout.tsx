@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 const BENEFICIOS = [
-  "Cobros por débito y crédito",
+  "Cobro por transferencia bancaria",
   "Recordatorios y alertas automáticas",
   "Panel con todas sus propiedades",
 ];

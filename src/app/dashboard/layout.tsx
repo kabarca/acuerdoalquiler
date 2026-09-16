@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getArrendadorActual } from "@/lib/auth";
 import { cerrarSesion } from "./actions";
-import { IconGrid, IconBuilding, IconUsers, IconCard, IconGear } from "@/lib/icons";
+import { IconGrid, IconBuilding, IconUsers, IconCard, IconGear, IconHelp, IconShield } from "@/lib/icons";
 
 const NAV = [
   { href: "/dashboard", label: "Panel", icon: IconGrid },
@@ -9,6 +9,7 @@ const NAV = [
   { href: "/dashboard/inquilinos", label: "Inquilinos", icon: IconUsers },
   { href: "/dashboard/pagos", label: "Pagos", icon: IconCard },
   { href: "/dashboard/configuracion", label: "Configuración", icon: IconGear },
+  { href: "/dashboard/ayuda", label: "Ayuda", icon: IconHelp },
 ];
 
 export default async function DashboardLayout({
@@ -40,6 +41,16 @@ export default async function DashboardLayout({
             </Link>
           ))}
         </nav>
+
+        {arrendador.esAdmin && (
+          <Link
+            href="/admin"
+            className="flex items-center gap-3 rounded-[10px] border border-white/10 px-3.5 py-2.5 text-[13.5px] font-semibold text-[#c7d3e3] hover:bg-white/10 hover:text-white"
+          >
+            <IconShield />
+            Panel admin
+          </Link>
+        )}
 
         <div className="mt-auto flex flex-col gap-2 border-t border-white/10 px-2 pt-4">
           <p className="truncate text-sm font-semibold text-white">{arrendador.nombre}</p>

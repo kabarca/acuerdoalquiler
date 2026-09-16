@@ -24,3 +24,15 @@ export async function getArrendadorActual() {
 
   return arrendador;
 }
+
+// Igual que getArrendadorActual(), pero además exige esAdmin — usado por
+// /admin, el panel interno del equipo de Rentia (ver CLAUDE.md).
+export async function getAdminActual() {
+  const arrendador = await getArrendadorActual();
+
+  if (!arrendador.esAdmin) {
+    redirect("/dashboard");
+  }
+
+  return arrendador;
+}

@@ -45,7 +45,7 @@ export default async function RegistroPage({
       <div className="flex flex-col gap-1.5">
         <h1 className="text-[28px] font-semibold">Cree su cuenta de arrendador</h1>
         <p className="text-[15px] text-ink-soft">
-          Gestione sus propiedades y cobre el arriendo por tarjeta.
+          Gestione sus propiedades y cobre el arriendo por transferencia bancaria.
         </p>
       </div>
 

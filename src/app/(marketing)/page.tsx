@@ -12,7 +12,7 @@ const PASOS = [
   {
     numero: "PASO 2",
     titulo: "Su inquilino recibe la factura",
-    texto: "Recibe un correo con el detalle y un enlace para pagar por transferencia, débito o crédito.",
+    texto: "Recibe un correo con el detalle y un enlace para pagar por transferencia bancaria.",
     icono: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><line x1="2.5" y1="9.5" x2="21.5" y2="9.5"/><line x1="5.5" y1="14.5" x2="9.5" y2="14.5"/></svg>
     ),
@@ -29,10 +29,10 @@ const PASOS = [
 
 const FEATURES = [
   {
-    titulo: "Débito y crédito",
-    texto: "Su inquilino paga con el método que prefiera, sin transferencias manuales.",
+    titulo: "Transferencia bancaria",
+    texto: "Su inquilino transfiere y sube el comprobante; usted lo confirma con un clic.",
     icono: (
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><line x1="2.5" y1="9.5" x2="21.5" y2="9.5"/></svg>
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 10.5l8-6 8 6"/><path d="M5.5 10.5v8M18.5 10.5v8"/><path d="M3 21h18"/><path d="M9 14.5v3M15 14.5v3"/></svg>
     ),
   },
   {
@@ -109,14 +109,14 @@ export default function Home() {
         <section className="mx-auto flex max-w-6xl flex-col items-center gap-16 px-8 py-20 sm:px-16 lg:flex-row lg:py-24">
           <div className="flex flex-1 flex-col gap-7">
             <span className="w-fit rounded-full bg-primary-light px-3.5 py-2 text-[13px] font-semibold text-primary">
-              Pagos de arriendo con tarjeta, sin fricciones
+              Cobro de arriendo por transferencia, sin fricciones
             </span>
             <h1 className="text-[44px] leading-[1.08] font-bold tracking-tight sm:text-[56px]">
-              Cobre el arriendo por tarjeta, sin contratiempos.
+              Cobre el arriendo por transferencia, sin contratiempos.
             </h1>
             <p className="max-w-lg text-lg leading-relaxed text-ink-soft">
-              Rentia envía la factura a su inquilino, gestiona el cobro por transferencia o
-              tarjeta, y le notifica automáticamente ante cualquier inconveniente. Usted se
+              Rentia envía la factura a su inquilino, gestiona el cobro por transferencia
+              bancaria, y le notifica automáticamente ante cualquier inconveniente. Usted se
               enfoca en sus propiedades.
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-3.5">
@@ -134,7 +134,7 @@ export default function Home() {
             <div className="mt-1 flex gap-7 text-sm text-ink-faint">
               <span>Sin costo de configuración</span>
               <span>·</span>
-              <span>Débito y crédito</span>
+              <span>Transferencia bancaria</span>
             </div>
           </div>
 
@@ -209,18 +209,16 @@ export default function Home() {
               <span className="text-[13px] font-bold tracking-wide text-primary uppercase">Precios</span>
               <h2 className="text-4xl font-bold tracking-tight">Simple, sin sorpresas</h2>
               <p className="max-w-lg text-[15px] leading-relaxed text-ink-soft">
-                Rentia todavía está en fase de prueba, por eso el modelo de precios final no está
-                definido. Así se ve mientras tanto.
+                Usar Rentia no tiene costo.
               </p>
             </div>
 
             <div className="mx-auto flex max-w-sm flex-col gap-6 rounded-2xl border-2 border-primary bg-bg p-10 text-center">
               <span className="mx-auto w-fit rounded-full bg-primary-light px-3.5 py-1.5 text-[12.5px] font-bold text-primary">
-                Fase de prueba
+                Gratis
               </span>
               <div>
                 <span className="font-heading text-5xl font-bold">₡0</span>
-                <span className="text-ink-faint"> por ahora</span>
               </div>
               <ul className="flex flex-col gap-2.5 text-left text-[14.5px] text-ink-soft">
                 <li className="flex items-center gap-2.5">
@@ -242,9 +240,6 @@ export default function Home() {
               >
                 Crear cuenta gratis
               </Link>
-              <p className="text-xs text-ink-faint">
-                Le avisaremos antes de que esto cambie — nada de cobros sorpresa.
-              </p>
             </div>
           </div>
         </section>

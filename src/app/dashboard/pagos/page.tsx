@@ -91,7 +91,7 @@ export default async function PagosPage({
         <div className="rounded-[14px] border border-border bg-surface px-5.5 py-5">
           <p className="text-[13px] font-semibold text-ink-faint">Costo en comisiones</p>
           <p className="mt-1.5 font-heading text-2xl font-bold">₡0</p>
-          <p className="mt-0.5 text-xs text-ink-faint">Las comisiones de tarjeta las asume el inquilino</p>
+          <p className="mt-0.5 text-xs text-ink-faint">Las transferencias bancarias no tienen comisión</p>
         </div>
       </div>
 

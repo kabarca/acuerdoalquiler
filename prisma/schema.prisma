@@ -22,6 +22,9 @@ model Arrendador {
   banco          String?
   cuentaIban     String?
   titularCuenta  String?
+  // true solo para las cuentas del equipo de Rentia — les da acceso a
+  // /admin (ver lib/auth.ts). Nunca se ofrece en el registro público.
+  esAdmin        Boolean  @default(false)
   creadoEn       DateTime @default(now())
 
   propiedades Propiedad[]
