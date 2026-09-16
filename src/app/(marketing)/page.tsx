@@ -139,26 +139,33 @@ export default function Home() {
           </div>
 
           <div className="flex flex-1 justify-center">
-            <div className="w-full max-w-[420px] overflow-hidden rounded-[20px] border border-border bg-surface shadow-[0_30px_60px_-20px_rgba(16,24,38,0.18)]">
-              <div className="flex items-center justify-between border-b border-border px-5.5 py-5">
-                <span className="text-[15px] font-bold">Sus propiedades</span>
-                <span className="text-xs text-ink-faint">Octubre 2026</span>
-              </div>
-              <div className="flex flex-col">
-                {RESUMEN.map((r, i) => (
-                  <div
-                    key={r.propiedad}
-                    className={`flex items-center justify-between px-5.5 py-4 ${i < RESUMEN.length - 1 ? "border-b border-border" : ""}`}
-                  >
-                    <div>
-                      <p className="text-sm font-semibold">{r.propiedad}</p>
-                      <p className="mt-0.5 text-[13px] text-ink-faint">{r.detalle}</p>
+            <div className="relative w-full max-w-[440px] pb-16 sm:pb-20">
+              <img
+                src="https://images.unsplash.com/photo-1515263487990-61b07816b324?q=80&w=900&auto=format&fit=crop"
+                alt="Edificio de apartamentos moderno"
+                className="aspect-[4/3] w-full rounded-[20px] object-cover shadow-[0_30px_60px_-20px_rgba(16,24,38,0.28)]"
+              />
+              <div className="absolute right-4 bottom-0 left-4 overflow-hidden rounded-[16px] border border-border bg-surface shadow-[0_20px_45px_-16px_rgba(16,24,38,0.3)] sm:right-[-20px] sm:left-auto sm:w-[300px]">
+                <div className="flex items-center justify-between border-b border-border px-5 py-4">
+                  <span className="text-[14px] font-bold">Sus propiedades</span>
+                  <span className="text-xs text-ink-faint">Octubre 2026</span>
+                </div>
+                <div className="flex flex-col">
+                  {RESUMEN.map((r, i) => (
+                    <div
+                      key={r.propiedad}
+                      className={`flex items-center justify-between px-5 py-3.5 ${i < RESUMEN.length - 1 ? "border-b border-border" : ""}`}
+                    >
+                      <div>
+                        <p className="text-[13.5px] font-semibold">{r.propiedad}</p>
+                        <p className="mt-0.5 text-[12px] text-ink-faint">{r.detalle}</p>
+                      </div>
+                      <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${TONOS[r.tono]}`}>
+                        {r.estado}
+                      </span>
                     </div>
-                    <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${TONOS[r.tono]}`}>
-                      {r.estado}
-                    </span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -191,14 +198,22 @@ export default function Home() {
           <h2 className="mb-14 text-center text-4xl font-bold tracking-tight">
             Todo lo que necesita para cobrar arriendo
           </h2>
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {FEATURES.map((f) => (
-              <div key={f.titulo} className="flex flex-col gap-3">
-                {f.icono}
-                <h3 className="text-base font-semibold">{f.titulo}</h3>
-                <p className="text-sm leading-relaxed text-ink-soft">{f.texto}</p>
-              </div>
-            ))}
+          <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
+            <img
+              src="https://images.unsplash.com/photo-1733244766159-f58f4184fd38?q=80&w=900&auto=format&fit=crop"
+              alt="Entrega de llaves al inquilino de una propiedad en alquiler"
+              loading="lazy"
+              className="aspect-[4/3] w-full rounded-2xl object-cover shadow-[0_20px_40px_-20px_rgba(16,24,38,0.2)]"
+            />
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+              {FEATURES.map((f) => (
+                <div key={f.titulo} className="flex flex-col gap-3">
+                  {f.icono}
+                  <h3 className="text-base font-semibold">{f.titulo}</h3>
+                  <p className="text-sm leading-relaxed text-ink-soft">{f.texto}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -246,8 +261,15 @@ export default function Home() {
 
         {/* CTA band */}
         <section className="mx-auto max-w-6xl px-8 pb-22 sm:px-16">
-          <div className="flex flex-col items-center justify-between gap-6 rounded-3xl bg-primary px-10 py-14 text-center sm:flex-row sm:text-left">
-            <div>
+          <div className="relative flex flex-col items-center justify-between gap-6 overflow-hidden rounded-3xl px-10 py-14 text-center sm:flex-row sm:text-left">
+            <img
+              src="https://images.unsplash.com/photo-1738852953898-ddebe3e8e80c?q=80&w=1400&auto=format&fit=crop"
+              alt="Casa en alquiler"
+              loading="lazy"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-dark/95 via-primary-dark/88 to-primary/75" />
+            <div className="relative">
               <h2 className="text-3xl font-bold tracking-tight text-white">
                 Comience a cobrar sin contratiempos
               </h2>
@@ -257,7 +279,7 @@ export default function Home() {
             </div>
             <Link
               href="/registro"
-              className="shrink-0 rounded-[10px] bg-white px-6 py-3.5 text-[15px] font-semibold text-primary-dark"
+              className="relative shrink-0 rounded-[10px] bg-white px-6 py-3.5 text-[15px] font-semibold text-primary-dark"
             >
               Crear cuenta gratis
             </Link>
