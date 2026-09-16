@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { DatosTransferencia } from "@/components/datos-transferencia";
 import { confirmarMetodoPago } from "./actions";
 
 function Logo() {
@@ -82,20 +83,7 @@ export default async function InvitacionPage({
 
             <div className="flex flex-col gap-2.5">
               <label className="text-[13px] font-semibold text-ink-soft">Datos para transferir</label>
-              <div className="flex flex-col gap-2 rounded-[10px] bg-bg px-4.5 py-4 text-[13.5px]">
-                <div className="flex justify-between">
-                  <span className="text-ink-faint">Banco</span>
-                  <span className="font-semibold">{arrendador.banco ?? "Sin configurar"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-ink-faint">Cuenta IBAN</span>
-                  <span className="font-semibold">{arrendador.cuentaIban ?? "Sin configurar"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-ink-faint">Titular</span>
-                  <span className="font-semibold">{arrendador.titularCuenta ?? "Sin configurar"}</span>
-                </div>
-              </div>
+              <DatosTransferencia arrendador={arrendador} />
             </div>
 
             <div className="flex flex-col gap-1.5">

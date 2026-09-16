@@ -1,8 +1,5 @@
 import { getArrendadorActual } from "@/lib/auth";
-import { actualizarDatosBancarios } from "../actions";
-
-const inputClass =
-  "w-full rounded-[10px] border-[1.5px] border-border bg-surface px-3.5 py-3 text-[15px] outline-none focus:border-primary";
+import { DatosBancariosForm } from "./datos-bancarios-form";
 
 function EstadoConexion({ conectado, nombre }: { conectado: boolean; nombre: string }) {
   return (
@@ -48,41 +45,7 @@ export default async function ConfiguracionPage() {
         <p className="mt-1 text-[13px] text-ink-soft">
           Se le muestra a su inquilino cuando elige pagar por transferencia bancaria.
         </p>
-        <form action={actualizarDatosBancarios} className="mt-4 flex flex-col gap-3">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[13px] font-semibold text-ink-soft">Banco</label>
-            <input
-              name="banco"
-              defaultValue={arrendador.banco ?? ""}
-              placeholder="Ej. Banco Nacional de Costa Rica"
-              className={inputClass}
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[13px] font-semibold text-ink-soft">Cuenta IBAN</label>
-            <input
-              name="cuentaIban"
-              defaultValue={arrendador.cuentaIban ?? ""}
-              placeholder="CR05 0151 0001 0123 4567 89"
-              className={inputClass}
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[13px] font-semibold text-ink-soft">Titular de la cuenta</label>
-            <input
-              name="titularCuenta"
-              defaultValue={arrendador.titularCuenta ?? ""}
-              placeholder={arrendador.nombre}
-              className={inputClass}
-            />
-          </div>
-          <button
-            type="submit"
-            className="self-start rounded-[10px] bg-primary px-5 py-2.75 text-[13.5px] font-semibold text-white hover:bg-primary-dark"
-          >
-            Guardar datos bancarios
-          </button>
-        </form>
+        <DatosBancariosForm arrendador={arrendador} />
       </div>
 
       <div className="max-w-xl rounded-2xl border border-border bg-surface p-6.5">

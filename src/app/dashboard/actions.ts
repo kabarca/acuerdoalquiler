@@ -364,12 +364,26 @@ export async function rechazarComprobante(formData: FormData) {
 export async function actualizarDatosBancarios(formData: FormData) {
   const arrendador = await getArrendadorActual();
 
+  const tipoCuentaBancaria =
+    (formData.get("tipoCuentaBancaria") as string) === "INTERNACIONAL"
+      ? "INTERNACIONAL"
+      : "NACIONAL";
+  const internacional = tipoCuentaBancaria === "INTERNACIONAL";
+
   await prisma.arrendador.update({
     where: { id: arrendador.id },
     data: {
+      tipoCuentaBancaria,
       banco: (formData.get("banco") as string) || null,
       cuentaIban: (formData.get("cuentaIban") as string) || null,
       titularCuenta: (formData.get("titularCuenta") as string) || null,
+      // Los campos de wire internacional se limpian si vuelve a NACIONAL,
+      // para no dejar datos viejos sin usar.
+      swiftBic: internacional ? (formData.get("swiftBic") as string) || null : null,
+      paisBanco: internacional ? (formData.get("paisBanco") as string) || null : null,
+      direccionBanco: internacional ? (formData.get("direccionBanco") as string) || null : null,
+      direccionTitular: internacional ? (formData.get("direccionTitular") as string) || null : null,
+      numeroRuta: internacional ? (formData.get("numeroRuta") as string) || null : null,
     },
   });
 

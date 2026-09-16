@@ -65,7 +65,10 @@ Landing, cuenta y panel principal:
 - [x] Alta combinada de propiedad + inquilino + condiciones de pago en un solo formulario
       (`/dashboard/propiedades/nueva`, `AddProperty`)
 - [x] Detalle de propiedad: tarjeta de inquilino + historial de pagos (`/dashboard/propiedades/[id]`, `PropertyDetail`)
-- [x] Configuración: datos de cuenta, cuenta bancaria (para transferencias), estado de integraciones
+- [x] Configuración: datos de cuenta, cuenta bancaria (para transferencias) con opción de cuenta en
+      Costa Rica o internacional (agrega SWIFT/BIC, país, dirección del banco, dirección del
+      titular y ruta ABA opcional — ver `TipoCuentaBancaria` en el schema y
+      `dashboard/configuracion/datos-bancarios-form.tsx`), estado de integraciones
 
 Cobro e invitación al inquilino:
 - [x] Página pública de pago (`/pagar/[facturaId]`, `PaymentPage`) — solo transferencia bancaria por

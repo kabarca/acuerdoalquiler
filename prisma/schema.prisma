@@ -10,22 +10,35 @@ datasource db {
   provider = "postgresql"
 }
 
+enum TipoCuentaBancaria {
+  NACIONAL
+  INTERNACIONAL
+}
+
 // Un arrendador = una cuenta (login vía Supabase Auth).
 model Arrendador {
-  id             String   @id @default(uuid())
-  supabaseUserId String   @unique
-  nombre         String
-  email          String   @unique
-  telefono       String?
+  id                 String              @id @default(uuid())
+  supabaseUserId     String              @unique
+  nombre             String
+  email              String              @unique
+  telefono           String?
   // Datos bancarios que se le muestran al inquilino cuando paga por
   // transferencia (ver TenantOnboarding / PaymentTransfer del diseño).
-  banco          String?
-  cuentaIban     String?
-  titularCuenta  String?
+  // Si es INTERNACIONAL, además se piden los datos de wire transfer
+  // (swiftBic, direcciones, país) — cuentaIban se reusa como "cuenta o IBAN".
+  tipoCuentaBancaria TipoCuentaBancaria  @default(NACIONAL)
+  banco              String?
+  cuentaIban         String?
+  titularCuenta      String?
+  swiftBic           String?
+  paisBanco          String?
+  direccionBanco     String?
+  direccionTitular   String?
+  numeroRuta         String? // routing/ABA — solo aplica a algunos bancos (p. ej. EE. UU.)
   // true solo para las cuentas del equipo de Rentia — les da acceso a
   // /admin (ver lib/auth.ts). Nunca se ofrece en el registro público.
-  esAdmin        Boolean  @default(false)
-  creadoEn       DateTime @default(now())
+  esAdmin            Boolean             @default(false)
+  creadoEn           DateTime            @default(now())
 
   propiedades Propiedad[]
 
