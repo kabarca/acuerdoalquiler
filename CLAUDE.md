@@ -116,6 +116,12 @@ Soporte y administración (no forman parte del artifact, agregadas el 2026-09-16
       `esAdmin=true` a mano con `prisma db execute` para poder probarlo — una cuenta real de
       arrendador nunca debería tener este campo en `true`. El sidebar del panel muestra un enlace
       "Panel admin" solo si `esAdmin` es `true`.
+      Cada tarjeta de `/admin` es un link a un detalle (agregado el 2026-09-17 a pedido de Thomas):
+      `/admin/arrendadores`, `/admin/propiedades`, `/admin/inquilinos` (todos los inquilinos, con
+      badge de estado: Al día / Factura vencida / Moroso / Inactivo) y `/admin/morosos` (solo los
+      inquilinos con una factura en estado `ATRASADA` o con una `Disputa` resuelta como `MOROSO`,
+      con el monto total atrasado). La tarjeta "Morosos / sin pagar" en `/admin` usa la misma
+      condición `OR` para el conteo.
 
 ## Fuera de alcance (deliberado, no es una pantalla del artifact)
 
