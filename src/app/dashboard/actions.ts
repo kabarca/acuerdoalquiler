@@ -14,7 +14,7 @@ function revalidarPanel() {
 export async function cerrarSesion() {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/login");
+  redirect("/");
 }
 
 function fechaOpcional(formData: FormData, campo: string) {
