@@ -1,11 +1,12 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getArrendadorActual } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { enviarInvitacion } from "@/lib/resend";
+import { enviarInvitacion, enviarVerificacionIdentidad as enviarVerificacionIdentidadEmail } from "@/lib/resend";
 
 function revalidarPanel() {
   revalidatePath("/dashboard", "layout");
@@ -234,6 +235,60 @@ export async function invitarInquilino(formData: FormData) {
     });
   } catch {
     // Resend todavía no está conectado (ver Configuración) — la invitación
+    // queda registrada y el link funciona igual, solo no se manda el correo.
+  }
+
+  revalidarPanel();
+  redirect(`/dashboard/propiedades/${propiedadId}`);
+}
+
+export async function enviarVerificacionIdentidad(formData: FormData) {
+  const arrendador = await getArrendadorActual();
+  const propiedadId = formData.get("propiedadId") as string;
+
+  const propiedad = await prisma.propiedad.findFirstOrThrow({
+    where: { id: propiedadId, arrendadorId: arrendador.id },
+    include: { inquilinos: { where: { activo: true } } },
+  });
+
+  const inquilino = propiedad.inquilinos[0];
+  if (!inquilino) {
+    throw new Error("Esta propiedad todavía no tiene inquilino — regístrelo primero.");
+  }
+
+  const token = randomBytes(24).toString("hex");
+  const tokenExpiraEn = new Date(Date.now() + 48 * 60 * 60 * 1000);
+
+  await prisma.verificacionIdentidad.upsert({
+    where: { inquilinoId: inquilino.id },
+    create: { inquilinoId: inquilino.id, token, tokenExpiraEn, enviadoEn: new Date() },
+    update: {
+      token,
+      tokenExpiraEn,
+      estado: "PENDIENTE",
+      enviadoEn: new Date(),
+      completadoEn: null,
+      cedulaFotoBytes: null,
+      cedulaFotoTipo: null,
+      selfieFotoBytes: null,
+      selfieFotoTipo: null,
+      textoExtraidoCedula: null,
+      rostrosCoinciden: null,
+      distanciaRostros: null,
+    },
+  });
+
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
+  try {
+    await enviarVerificacionIdentidadEmail({
+      paraEmail: inquilino.email,
+      nombreInquilino: inquilino.nombre,
+      direccionPropiedad: propiedad.direccion,
+      linkVerificacion: `${baseUrl}/verificar/${token}`,
+    });
+  } catch {
+    // Resend todavía no está conectado (ver Configuración) — la verificación
     // queda registrada y el link funciona igual, solo no se manda el correo.
   }
 

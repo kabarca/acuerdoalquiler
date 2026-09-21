@@ -123,6 +123,41 @@ Soporte y administración (no forman parte del artifact, agregadas el 2026-09-16
       con el monto total atrasado). La tarjeta "Morosos / sin pagar" en `/admin` usa la misma
       condición `OR` para el conteo.
 
+**Verificación de identidad del inquilino** (agregada el 2026-09-21 a pedido de Thomas, inspirada en
+una conversación con Gemini sobre el mismo problema — ver también el modelo `VerificacionIdentidad`
+en `schema.prisma`):
+- [x] Desde `/dashboard/propiedades/[id]` el arrendador le manda al inquilino (por correo, vía
+      `enviarVerificacionIdentidad` en `lib/resend.ts`) un link tipo `/verificar/[token]` que vence en
+      48h. El inquilino lo abre en su celular — sin descargar nada — y ahí mismo toma foto de su
+      cédula (`capture="environment"`) y una selfie (`capture="user"`) con inputs nativos de HTML.
+- [x] **El match de rostros corre en el navegador del inquilino**, no en el servidor — usa
+      `@vladmandic/face-api` (TensorFlow.js) cargando los modelos desde `/public/models` vía
+      `loadFromUri`, calcula la distancia euclidiana entre ambas fotos (umbral 0.6, igual que
+      `face_recognition` en Python) y manda el resultado junto con las fotos. Esta decisión fue
+      deliberada, no un atajo: se intentó primero correrlo en el servidor con
+      `@tensorflow/tfjs-node`, pero requiere compilar bindings nativos (falla en este entorno —
+      además el path del proyecto tiene un espacio, lo cual rompe el build de `node-gyp` — y tampoco
+      es viable en Vercel serverless). La build de Node de `@vladmandic/face-api` además exige
+      `tfjs-node` sí o sí. Correrlo en el navegador evita todo eso y es gratis.
+      **Importante:** como el resultado del match lo calcula y reporta el cliente, es una señal de
+      apoyo, no una prueba de seguridad — por eso el arrendador también ve ambas fotos en
+      `/dashboard/verificaciones/[id]` para confirmar a simple vista.
+- [x] El texto de la cédula se extrae con OCR **en el servidor** con `tesseract.js` (lang `spa`)
+      dentro de `procesarVerificacion` (`verificar/[token]/actions.ts`) — puramente informativo para
+      el arrendador, no se usa para validar nada automáticamente. **`tesseract.js` tuvo que agregarse
+      a `serverExternalPackages` en `next.config.ts`**: si Turbopack lo empaqueta, se rompe la
+      resolución de su worker en tiempo de ejecución (`Cannot find module .../worker-script/node/
+      index.js`) — si se actualiza `tesseract.js` y vuelve a fallar, empezar por ahí.
+- [x] Fotos guardadas como `Bytes` en `VerificacionIdentidad` (mismo patrón que `comprobanteBytes` en
+      `Factura` — no hay bucket de almacenamiento configurado). Se sirven vía
+      `/foto-verificacion/[verificacionId]/[tipo]/route.ts`, protegida por sesión y solo al
+      arrendador dueño del inquilino (igual que `/comprobante/[facturaId]`).
+- **Pendiente (no bloqueante para probar, sí antes de producción):** la pantalla de `/verificar/[token]`
+  no tiene un checkbox explícito de consentimiento como el de `compartirHistorial` en `/invitacion` —
+  solo un aviso de "sus fotos quedan cifradas". Cédula + selfie es dato sensible; antes de lanzar de
+  verdad valdría la pena agregar un consentimiento explícito y revisar si aplica alguna norma de
+  protección de datos en Costa Rica para este tipo de dato.
+
 ## Fuera de alcance (deliberado, no es una pantalla del artifact)
 
 - Pago automático recurrente con tarjeta guardada (el toggle existe visualmente en `PaymentPage` pero no
@@ -158,6 +193,8 @@ un repositorio y proyecto totalmente separados, sin dependencias entre ambos:
 - **ORM:** Prisma 7 (driver adapter `@prisma/adapter-pg`, no el motor por defecto)
 - **Correo:** Resend (factura, recordatorio, aviso al arrendador)
 - **Cobro con tarjeta:** Onvopay (pendiente cuenta real)
+- **Verificación de identidad:** `@vladmandic/face-api` + `@tensorflow/tfjs` (match de rostros, corre
+  en el navegador del inquilino) y `tesseract.js` (OCR de la cédula, corre en el servidor)
 - **Programador de tareas:** Vercel Cron (recordatorios diarios) — pendiente de implementar
 - **Hosting:** Vercel (pendiente desplegar)
 
@@ -166,6 +203,9 @@ un repositorio y proyecto totalmente separados, sin dependencias entre ambos:
 - El inquilino no crea cuenta — sus datos los ingresa el arrendador. Hay que ser claro en el correo
   de factura sobre quién le está cobrando y por qué tiene sus datos.
 - Datos de tarjeta nunca tocan el servidor propio — ver nota de seguridad arriba.
+- Foto de cédula + selfie del inquilino (ver Verificación de identidad arriba) es dato sensible —
+  hoy se guarda sin cifrar en la misma base de datos (igual que el comprobante de transferencia) y
+  sin checkbox de consentimiento explícito. Revisar antes de producción.
 
 ## Decisiones pendientes de Thomas (preguntar antes de asumir)
 

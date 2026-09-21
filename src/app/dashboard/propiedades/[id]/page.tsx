@@ -10,6 +10,7 @@ import {
   marcarFacturaAtrasadaDePrueba,
   abrirDisputaDePrueba,
   invitarInquilino,
+  enviarVerificacionIdentidad,
 } from "../../actions";
 
 const inputClass =
@@ -63,7 +64,10 @@ export default async function PropiedadDetallePage({
     include: {
       inquilinos: {
         where: { activo: true },
-        include: { facturas: { orderBy: { periodo: "desc" }, include: { disputa: true } } },
+        include: {
+          facturas: { orderBy: { periodo: "desc" }, include: { disputa: true } },
+          verificacionIdentidad: true,
+        },
       },
     },
   });
@@ -243,6 +247,48 @@ export default async function PropiedadDetallePage({
                     Enviada el {inquilino.invitacionEnviadaEn.toLocaleDateString("es-CR")}.
                   </p>
                 )}
+              </div>
+
+              <div className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5.5">
+                <div className="flex items-center justify-between">
+                  <p className="text-[14.5px] font-bold">Verificación de identidad</p>
+                  {inquilino.verificacionIdentidad?.estado === "COMPLETADA" ? (
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                        inquilino.verificacionIdentidad.rostrosCoinciden
+                          ? "bg-success-bg text-success"
+                          : "bg-danger-bg text-danger"
+                      }`}
+                    >
+                      {inquilino.verificacionIdentidad.rostrosCoinciden ? "Rostros coinciden" : "No coinciden"}
+                    </span>
+                  ) : inquilino.verificacionIdentidad?.estado === "PENDIENTE" ? (
+                    <span className="rounded-full bg-warning-bg px-2.5 py-1 text-xs font-bold text-warning">
+                      Pendiente
+                    </span>
+                  ) : null}
+                </div>
+                <p className="text-[13px] leading-relaxed text-ink-soft">
+                  Envíele un enlace para que confirme su identidad desde el celular: foto de cédula + selfie,
+                  sin descargar nada.
+                </p>
+                {inquilino.verificacionIdentidad?.estado === "COMPLETADA" && (
+                  <Link
+                    href={`/dashboard/verificaciones/${inquilino.verificacionIdentidad.id}`}
+                    className="text-[13px] font-semibold text-accent"
+                  >
+                    Ver fotos y resultado →
+                  </Link>
+                )}
+                <form action={enviarVerificacionIdentidad}>
+                  <input type="hidden" name="propiedadId" value={propiedad.id} />
+                  <button
+                    type="submit"
+                    className="w-full rounded-[9px] border-[1.5px] border-border py-2.75 text-center text-[13.5px] font-bold text-ink-soft hover:border-primary hover:text-primary"
+                  >
+                    {inquilino.verificacionIdentidad ? "Reenviar enlace" : "Enviar enlace de verificación"}
+                  </button>
+                </form>
               </div>
 
               {!facturaDelMes ? (

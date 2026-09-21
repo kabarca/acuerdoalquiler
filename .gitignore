@@ -37,3 +37,6 @@ next-env.d.ts
 /prisma/generated
 
 /src/generated/prisma
+
+# tesseract.js descarga esto a la raíz en dev — se re-descarga solo si falta
+*.traineddata

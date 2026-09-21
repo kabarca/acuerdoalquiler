@@ -97,8 +97,45 @@ model Inquilino {
 
   facturas Factura[]
   disputas Disputa[]
+  verificacionIdentidad VerificacionIdentidad?
 
   @@map("inquilinos")
+}
+
+enum EstadoVerificacion {
+  PENDIENTE
+  COMPLETADA
+  EXPIRADA
+}
+
+// Verificación de identidad del inquilino: el arrendador envía un link/QR
+// por correo, el inquilino lo abre en su celular y ahí mismo toma la foto
+// de su cédula y una selfie (sin descargar nada). El match de rostros se
+// calcula EN EL NAVEGADOR del inquilino con face-api.js (evita depender de
+// un backend con GPU/Python) y el resultado se manda junto con las fotos;
+// el OCR del texto de la cédula sí corre en el servidor con tesseract.js.
+// Nota: como el match lo calcula el cliente, es una señal de apoyo para el
+// arrendador, no una prueba criminalística — por eso también se guardan
+// ambas fotos para que el arrendador las compare a simple vista.
+model VerificacionIdentidad {
+  id                  String              @id @default(uuid())
+  inquilinoId         String              @unique
+  inquilino           Inquilino           @relation(fields: [inquilinoId], references: [id], onDelete: Cascade)
+  token               String              @unique
+  tokenExpiraEn       DateTime
+  estado              EstadoVerificacion  @default(PENDIENTE)
+  cedulaFotoBytes     Bytes?
+  cedulaFotoTipo      String?
+  selfieFotoBytes     Bytes?
+  selfieFotoTipo      String?
+  textoExtraidoCedula String?
+  rostrosCoinciden    Boolean?
+  distanciaRostros    Float?
+  enviadoEn           DateTime?
+  completadoEn        DateTime?
+  creadoEn            DateTime            @default(now())
+
+  @@map("verificaciones_identidad")
 }
 
 enum EstadoFactura {

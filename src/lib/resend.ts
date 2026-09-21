@@ -182,3 +182,34 @@ export async function enviarInvitacion(params: {
     html,
   });
 }
+
+export async function enviarVerificacionIdentidad(params: {
+  paraEmail: string;
+  nombreInquilino: string;
+  direccionPropiedad: string;
+  linkVerificacion: string;
+}) {
+  const html = envoltura(`
+    <div style="padding:32px;">
+      <h1 style="font-size:19px; margin:0 0 6px;">Verifique su identidad</h1>
+      <p style="color:${INK_SOFT}; font-size:14.5px; line-height:1.6;">
+        Hola ${params.nombreInquilino}, su arrendador de <strong>${params.direccionPropiedad}</strong> le pide
+        confirmar su identidad. Abra este enlace desde su celular: le pedirá una foto de su cédula y una selfie,
+        directamente con la cámara — no necesita descargar nada.
+      </p>
+      <a href="${params.linkVerificacion}" style="display:block; margin-top:20px; background:${PRIMARY}; color:#fff; border-radius:10px; padding:15px; text-align:center; font-weight:700; font-size:15px; text-decoration:none;">
+        Verificar mi identidad
+      </a>
+      <p style="color:${INK_FAINT}; font-size:12px; margin-top:14px;">
+        Este enlace vence en 48 horas por seguridad.
+      </p>
+    </div>
+  `);
+
+  return resend.emails.send({
+    from: REMITENTE,
+    to: params.paraEmail,
+    subject: `Verifique su identidad — ${params.direccionPropiedad}`,
+    html,
+  });
+}
