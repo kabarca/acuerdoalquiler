@@ -198,6 +198,14 @@ mecanismo que la del inquilino, pero es requisito para poder operar, no opcional
       tener que entrar arrendador por arrendador. Se agregó porque, probándolo con Thomas, el único
       lugar donde encontraba el caso pendiente era navegando a mano a `/admin/arrendadores/[id]` — no
       había ninguna señal desde el panel principal.
+- [x] `/admin` tiene una barra de navegación fija (`admin/layout.tsx`) con pestañas a Panel,
+      Arrendadores, Propiedades, Inquilinos, Morosos y **Verificación de usuarios** — antes solo se
+      podía navegar entre secciones volviendo a `/admin` y haciendo clic en cada tarjeta, sin ninguna
+      pestaña persistente. La pestaña de Verificación muestra el conteo de pendientes en un badge rojo.
+      El query de `/admin/verificaciones` no filtra por `esAdmin`, así que si un admin (como Thomas)
+      tiene su propia verificación pendiente, también le aparece ahí — no hay caso especial para
+      auto-revisión, cualquier admin puede aprobar la verificación de cualquier arrendador, incluida
+      la suya propia.
 - [x] **Bug real encontrado y arreglado (2026-09-22), probado con la cuenta real de Thomas:** las fotos
       tomadas con la cámara nativa de un iPhone a veces se suben en formato **HEIC**, que ningún
       navegador puede mostrar en un `<img>` ni face-api puede leer para comparar rostros — el match

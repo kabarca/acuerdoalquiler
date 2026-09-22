@@ -1,6 +1,16 @@
 import Link from "next/link";
 import { getAdminActual } from "@/lib/auth";
 import { cerrarSesion } from "@/app/dashboard/actions";
+import { prisma } from "@/lib/prisma";
+import { IconGrid, IconBuilding, IconUsers, IconAlert, IconShield } from "@/lib/icons";
+
+const NAV = [
+  { href: "/admin", label: "Panel", icon: IconGrid },
+  { href: "/admin/arrendadores", label: "Arrendadores", icon: IconUsers },
+  { href: "/admin/propiedades", label: "Propiedades", icon: IconBuilding },
+  { href: "/admin/inquilinos", label: "Inquilinos", icon: IconUsers },
+  { href: "/admin/morosos", label: "Morosos", icon: IconAlert },
+] as const;
 
 export default async function AdminLayout({
   children,
@@ -8,6 +18,9 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const admin = await getAdminActual();
+  const verificacionesPendientes = await prisma.arrendador.count({
+    where: { identidadVerificada: false, documentoFotoBytes: { not: null } },
+  });
 
   return (
     <div className="min-h-screen bg-bg">
@@ -35,6 +48,31 @@ export default async function AdminLayout({
           </form>
         </div>
       </header>
+
+      <nav className="flex items-center gap-1.5 overflow-x-auto border-b border-border bg-surface px-8 py-2.5">
+        {NAV.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className="flex shrink-0 items-center gap-2 rounded-[9px] px-3.5 py-2 text-[13.5px] font-semibold text-ink-soft hover:bg-bg hover:text-ink"
+          >
+            <item.icon />
+            {item.label}
+          </Link>
+        ))}
+        <Link
+          href="/admin/verificaciones"
+          className="flex shrink-0 items-center gap-2 rounded-[9px] px-3.5 py-2 text-[13.5px] font-semibold text-ink-soft hover:bg-bg hover:text-ink"
+        >
+          <IconShield />
+          Verificación de usuarios
+          {verificacionesPendientes > 0 && (
+            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-danger px-1.5 text-[11px] font-bold text-white">
+              {verificacionesPendientes}
+            </span>
+          )}
+        </Link>
+      </nav>
 
       <main>{children}</main>
     </div>
