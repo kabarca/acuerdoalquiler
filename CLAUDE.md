@@ -158,70 +158,26 @@ en `schema.prisma`):
   verdad valdría la pena agregar un consentimiento explícito y revisar si aplica alguna norma de
   protección de datos en Costa Rica para este tipo de dato.
 
-**Verificación de identidad del ARRENDADOR** (agregada el 2026-09-22 a pedido de Thomas — mismo
-mecanismo que la del inquilino, pero es requisito para poder operar, no opcional):
-- [x] Campos de verificación directo en `Arrendador` (no en un modelo aparte como la del inquilino,
-      porque no necesita link por correo — el arrendador ya tiene sesión): `tipoDocumentoIdentidad`
-      (`CEDULA` o `PASAPORTE`), `numeroDocumentoIdentidad`, `documentoFotoBytes/Tipo`,
-      `selfieFotoBytes/Tipo`, `textoExtraidoDocumento`, `rostrosCoinciden`, `distanciaRostros`,
-      y el flag que realmente importa: `identidadVerificada` (bool).
-- [x] `/dashboard/verificar-identidad`: mismo flujo de captura que `/verificar/[token]` (selector de
-      cédula/pasaporte primero, luego foto de documento + selfie, match en el navegador con
-      `compararRostros()` — **se movió la lógica compartida a `src/lib/comparar-rostros.ts`** para no
-      duplicarla entre inquilino y arrendador), pero llama a `verificarIdentidadPropia()` en vez de un
-      Server Action con token. Acepta `?next=` para volver a donde el arrendador venía (típicamente
-      `/dashboard/propiedades/nueva`).
-- [x] **`identidadVerificada` solo queda `true` automáticamente si `rostrosCoinciden === true`** (el
-      match calculado en su navegador). Si no hay match o no se detectó rostro, la verificación se
-      guarda igual (fotos, OCR) pero queda pendiente de revisión manual — ver `/admin/arrendadores/[id]`,
-      que muestra ambas fotos y un botón "Aprobar verificación manualmente"
-      (`verificarArrendadorManualmente()` en `admin/actions.ts`). Las fotos se sirven vía
-      `/foto-verificacion-arrendador/[arrendadorId]/[tipo]/route.ts`, protegida con `esAdmin` (a
-      diferencia de la del inquilino, que solo la ve su propio arrendador). **Confirmado con Thomas
-      (2026-09-22): la aprobación es automática cuando el match coincide — manual solo como respaldo
-      cuando el navegador no logra confirmarlo, no un paso obligatorio para toda verificación.**
-- [x] Cuando queda pendiente de revisión manual, se le avisa por correo a **todos los `esAdmin=true`**
-      (`avisarAdminVerificacionPendiente()` en `lib/resend.ts`, llamado desde
-      `verificarIdentidadPropia()`) con un link directo a `/admin/arrendadores/[id]`. Se manda a todos
-      los admins (no a un correo fijo en `config.ts`) para que cualquier cuenta que se marque
-      `esAdmin=true` en el futuro reciba el aviso automáticamente, sin tocar código.
-- [x] **Mientras `identidadVerificada` sea `false`, no puede registrar propiedades**: bloqueado en dos
-      capas — `/dashboard/propiedades/nueva` (Server Component) muestra una pantalla explicativa en vez
-      del formulario, y `crearPropiedadConInquilino()` (`dashboard/actions.ts`) también revisa el flag
-      por si acaso y redirige a la verificación. El panel principal (`/dashboard`) muestra además un
-      banner recordatorio si todavía no está verificado, para que no se entere solo al intentar
-      registrar una propiedad.
-- [x] `/admin/arrendadores` muestra una columna "Identidad" (Verificado / Por revisar / Sin enviar) y
-      un link "Ver →" a `/admin/arrendadores/[id]` con el detalle completo.
-- [x] `/admin` tiene una quinta tarjeta "Verificaciones pendientes" que lleva a `/admin/verificaciones`
-      — una cola de revisión con ambas fotos y el botón de aprobar, una debajo de la otra, para no
-      tener que entrar arrendador por arrendador. Se agregó porque, probándolo con Thomas, el único
-      lugar donde encontraba el caso pendiente era navegando a mano a `/admin/arrendadores/[id]` — no
-      había ninguna señal desde el panel principal.
-- [x] `/admin` tiene una barra de navegación fija (`admin/layout.tsx`) con pestañas a Panel,
-      Arrendadores, Propiedades, Inquilinos, Morosos y **Verificación de usuarios** — antes solo se
-      podía navegar entre secciones volviendo a `/admin` y haciendo clic en cada tarjeta, sin ninguna
-      pestaña persistente. La pestaña de Verificación muestra el conteo de pendientes en un badge rojo.
-      El query de `/admin/verificaciones` no filtra por `esAdmin`, así que si un admin (como Thomas)
-      tiene su propia verificación pendiente, también le aparece ahí — no hay caso especial para
-      auto-revisión, cualquier admin puede aprobar la verificación de cualquier arrendador, incluida
-      la suya propia.
-- [x] **Bug real encontrado y arreglado (2026-09-22), probado con la cuenta real de Thomas:** las fotos
-      tomadas con la cámara nativa de un iPhone a veces se suben en formato **HEIC**, que ningún
-      navegador puede mostrar en un `<img>` ni face-api puede leer para comparar rostros — el match
-      fallaba en silencio (`rostrosCoinciden: null`, "no se detectó rostro") y encima la miniatura
-      quedaba rota, sin ningún aviso de qué pasó. Se agregó conversión a JPEG en dos capas:
+**Verificación de identidad — solo del INQUILINO, no del arrendador** (el 2026-09-22 se probó y se
+llegó a construir también una verificación obligatoria del lado del arrendador — cédula/pasaporte +
+selfie, bloqueando el registro de propiedades hasta aprobarse — pero Thomas pidió revertirla ese mismo
+día: "ya no necesito que este proceso sea para el arrendatario solo para el inquilino". Se borró todo
+ese código, la tabla de columnas en `Arrendador` (con `--accept-data-loss`, confirmado explícitamente
+por Thomas dos veces por la protección propia de Prisma) y la pestaña/tarjeta de admin correspondientes.
+Si en el futuro se vuelve a pedir algo así para el arrendador, el patrón a seguir es el mismo que ya
+funciona para el inquilino, descrito abajo — no hace falta reinventarlo.):
+- [x] **Bug real encontrado y arreglado, sigue aplicando:** las fotos tomadas con la cámara nativa de
+      un iPhone a veces se suben en formato **HEIC**, que ningún navegador puede mostrar en un `<img>`
+      ni face-api puede leer para comparar rostros — el match fallaba en silencio ("no se detectó
+      rostro") y la miniatura quedaba rota, sin aviso de qué pasó. Se agregó conversión a JPEG en dos
+      capas, y sigue en pie porque la usa la verificación del inquilino:
       - **En el navegador**, apenas se elige el archivo (`src/lib/heic-cliente.ts`,
         `convertirSiEsHeic()`, usa `heic-convert/browser` con `libheif-js`/WASM) — esto es lo que
         arregla la vista previa Y el match de rostros, porque ambos pasan por el archivo ya convertido.
       - **En el servidor**, como respaldo (`src/lib/normalizar-imagen.ts`, `normalizarImagen()`, mismo
         `heic-convert` pero build de Node) por si la conversión del navegador falla por alguna razón.
-      - `heic-convert` se agregó a `serverExternalPackages` en `next.config.ts` junto con
-        `tesseract.js`, por el mismo motivo (carga un WASM en tiempo de ejecución que Turbopack rompe
-        si lo empaqueta).
-      - La foto de cédula que Thomas ya tenía guardada en HEIC (de antes de este arreglo) se
-        reconvirtió a mano una sola vez con un script — no hace falta repetirlo, era solo por los datos
-        viejos.
+      - `heic-convert` está en `serverExternalPackages` en `next.config.ts` junto con `tesseract.js`,
+        por el mismo motivo (carga un WASM en tiempo de ejecución que Turbopack rompe si lo empaqueta).
 
 ## Fuera de alcance (deliberado, no es una pantalla del artifact)
 
@@ -268,10 +224,9 @@ un repositorio y proyecto totalmente separados, sin dependencias entre ambos:
 - El inquilino no crea cuenta — sus datos los ingresa el arrendador. Hay que ser claro en el correo
   de factura sobre quién le está cobrando y por qué tiene sus datos.
 - Datos de tarjeta nunca tocan el servidor propio — ver nota de seguridad arriba.
-- Foto de cédula/pasaporte + selfie, tanto del inquilino como del arrendador (ver Verificación de
-  identidad arriba), es dato sensible — hoy se guarda sin cifrar en la misma base de datos (igual que
-  el comprobante de transferencia) y, del lado del inquilino, sin checkbox de consentimiento explícito.
-  Revisar antes de producción.
+- Foto de cédula + selfie del inquilino (ver Verificación de identidad arriba) es dato sensible — hoy
+  se guarda sin cifrar en la misma base de datos (igual que el comprobante de transferencia) y sin
+  checkbox de consentimiento explícito. Revisar antes de producción.
 
 ## Decisiones pendientes de Thomas (preguntar antes de asumir)
 
@@ -291,9 +246,6 @@ registro) para poder probar el sistema sin cuentas reales:
 - Correo: `arrendador@prueba.local`
 - Contraseña: `Prueba1234!`
 - Tiene `esAdmin=true`, así que con esta cuenta también se puede ver `/admin`.
-- Tiene `identidadVerificada=true` (se probó el flujo real de `/dashboard/verificar-identidad` con
-  esta cuenta el 2026-09-22, con fotos de prueba de Unsplash — ver nota de imágenes reales en la
-  sección de diseño).
 
 ## Git
 

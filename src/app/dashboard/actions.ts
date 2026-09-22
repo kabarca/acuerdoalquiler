@@ -28,10 +28,6 @@ function fechaOpcional(formData: FormData, campo: string) {
 export async function crearPropiedadConInquilino(formData: FormData) {
   const arrendador = await getArrendadorActual();
 
-  if (!arrendador.identidadVerificada) {
-    redirect("/dashboard/verificar-identidad?next=/dashboard/propiedades/nueva");
-  }
-
   const direccion = formData.get("direccion") as string;
   const tipo = formData.get("tipo") as string;
   const canton = formData.get("canton") as string;

@@ -1,7 +1,7 @@
 // Comparación de rostros — corre en el navegador (no en el servidor) con
 // face-api.js/TensorFlow.js. Ver la nota larga en CLAUDE.md sobre por qué
-// no se usa Python/face_recognition aquí. Compartido entre la verificación
-// del inquilino (verificar/[token]) y la del arrendador (dashboard/verificar-identidad).
+// no se usa Python/face_recognition aquí. Usado por la verificación de
+// identidad del inquilino (verificar/[token]).
 
 export type ResultadoMatch = {
   coincide: boolean | null;

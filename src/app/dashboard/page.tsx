@@ -66,21 +66,6 @@ export default async function PanelPage() {
         </Link>
       </div>
 
-      {!arrendador.identidadVerificada && (
-        <Link
-          href="/dashboard/verificar-identidad"
-          className="flex items-center justify-between rounded-2xl border border-primary bg-primary-light px-5.5 py-4"
-        >
-          <div className="flex items-center gap-3">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3.5 5 6.5v5.2c0 4.6 3 7.9 7 8.8 4-.9 7-4.2 7-8.8V6.5L12 3.5Z"/><path d="M9 12l2 2 4-4.5"/></svg>
-            <span className="text-[14.5px] font-semibold text-primary">
-              Verifique su identidad para poder registrar propiedades
-            </span>
-          </div>
-          <span className="text-[13.5px] font-semibold text-primary">Verificar ahora →</span>
-        </Link>
-      )}
-
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
         <div className="flex flex-col gap-2.5 rounded-[14px] border border-border bg-surface px-6 py-5.5">
           <span className="text-[13px] font-semibold text-ink-faint">Cobrado este mes</span>

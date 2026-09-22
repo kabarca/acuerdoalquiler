@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { crearPropiedadConInquilino } from "../../actions";
-import { IconBuilding, IconUsers, IconCard, IconShield } from "@/lib/icons";
-import { getArrendadorActual } from "@/lib/auth";
+import { IconBuilding, IconUsers, IconCard } from "@/lib/icons";
 
 const inputClass =
   "w-full rounded-[10px] border-[1.5px] border-border bg-surface px-3.5 py-3 text-[15px] outline-none focus:border-primary";
@@ -38,31 +37,7 @@ function Step({ n, label, activo }: { n: number; label: string; activo: boolean 
   );
 }
 
-export default async function NuevaPropiedadPage() {
-  const arrendador = await getArrendadorActual();
-
-  if (!arrendador.identidadVerificada) {
-    return (
-      <div className="mx-auto flex max-w-lg flex-col items-center gap-4 px-8 py-20 text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-light text-primary">
-          <IconShield className="h-6.5 w-6.5" />
-        </div>
-        <h1 className="text-[21px] font-semibold">Verifique su identidad primero</h1>
-        <p className="text-[14.5px] leading-relaxed text-ink-soft">
-          Por seguridad, antes de registrar una propiedad en Rentia necesitamos confirmar que usted es
-          quien dice ser: una foto de su cédula o pasaporte y una selfie, directo desde su celular o
-          computadora.
-        </p>
-        <Link
-          href="/dashboard/verificar-identidad?next=/dashboard/propiedades/nueva"
-          className="mt-2 rounded-[10px] bg-primary px-6.5 py-3.5 text-[15px] font-bold text-white hover:bg-primary-dark"
-        >
-          Verificar mi identidad
-        </Link>
-      </div>
-    );
-  }
-
+export default function NuevaPropiedadPage() {
   return (
     <div className="mx-auto max-w-3xl px-8 py-10">
       <div className="flex flex-col gap-1.5">
