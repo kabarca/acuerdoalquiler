@@ -5,6 +5,7 @@ import { getArrendadorActual } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createWorker } from "tesseract.js";
 import { avisarAdminVerificacionPendiente } from "@/lib/resend";
+import { normalizarImagen } from "@/lib/normalizar-imagen";
 
 export async function verificarIdentidadPropia(
   formData: FormData,
@@ -25,8 +26,18 @@ export async function verificarIdentidadPropia(
     return { ok: false, error: "Debe adjuntar la foto del documento y una selfie." };
   }
 
-  const documentoBytes = Buffer.from(await documento.arrayBuffer());
-  const selfieBytes = Buffer.from(await selfie.arrayBuffer());
+  const documentoNormalizado = await normalizarImagen(
+    Buffer.from(await documento.arrayBuffer()),
+    documento.type,
+    documento.name,
+  );
+  const selfieNormalizada = await normalizarImagen(
+    Buffer.from(await selfie.arrayBuffer()),
+    selfie.type,
+    selfie.name,
+  );
+  const documentoBytes = documentoNormalizado.buffer;
+  const selfieBytes = selfieNormalizada.buffer;
 
   let textoExtraido = "";
   try {
@@ -47,9 +58,9 @@ export async function verificarIdentidadPropia(
       tipoDocumentoIdentidad: tipoDocumento,
       numeroDocumentoIdentidad: numeroDocumento || null,
       documentoFotoBytes: documentoBytes,
-      documentoFotoTipo: documento.type || "image/jpeg",
+      documentoFotoTipo: documentoNormalizado.tipo,
       selfieFotoBytes: selfieBytes,
-      selfieFotoTipo: selfie.type || "image/jpeg",
+      selfieFotoTipo: selfieNormalizada.tipo,
       textoExtraidoDocumento: textoExtraido || null,
       rostrosCoinciden: coincide,
       distanciaRostros: distanciaRaw ? Number(distanciaRaw) : null,

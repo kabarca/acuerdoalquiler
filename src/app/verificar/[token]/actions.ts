@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { createWorker } from "tesseract.js";
+import { normalizarImagen } from "@/lib/normalizar-imagen";
 
 export async function procesarVerificacion(
   formData: FormData,
@@ -35,8 +36,18 @@ export async function procesarVerificacion(
     return { ok: false, error: "Debe adjuntar la foto de su cédula y una selfie." };
   }
 
-  const cedulaBytes = Buffer.from(await cedula.arrayBuffer());
-  const selfieBytes = Buffer.from(await selfie.arrayBuffer());
+  const cedulaNormalizada = await normalizarImagen(
+    Buffer.from(await cedula.arrayBuffer()),
+    cedula.type,
+    cedula.name,
+  );
+  const selfieNormalizada = await normalizarImagen(
+    Buffer.from(await selfie.arrayBuffer()),
+    selfie.type,
+    selfie.name,
+  );
+  const cedulaBytes = cedulaNormalizada.buffer;
+  const selfieBytes = selfieNormalizada.buffer;
 
   let textoExtraido = "";
   try {
@@ -53,9 +64,9 @@ export async function procesarVerificacion(
     data: {
       estado: "COMPLETADA",
       cedulaFotoBytes: cedulaBytes,
-      cedulaFotoTipo: cedula.type || "image/jpeg",
+      cedulaFotoTipo: cedulaNormalizada.tipo,
       selfieFotoBytes: selfieBytes,
-      selfieFotoTipo: selfie.type || "image/jpeg",
+      selfieFotoTipo: selfieNormalizada.tipo,
       textoExtraidoCedula: textoExtraido || null,
       rostrosCoinciden: coincideRaw === "true" ? true : coincideRaw === "false" ? false : null,
       distanciaRostros: distanciaRaw ? Number(distanciaRaw) : null,

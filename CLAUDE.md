@@ -193,10 +193,27 @@ mecanismo que la del inquilino, pero es requisito para poder operar, no opcional
       registrar una propiedad.
 - [x] `/admin/arrendadores` muestra una columna "Identidad" (Verificado / Por revisar / Sin enviar) y
       un link "Ver →" a `/admin/arrendadores/[id]` con el detalle completo.
-- Las cuentas de prueba existentes (`arrendador@prueba.local`, las de Thomas) quedaron con
-  `identidadVerificada=false` por defecto al agregar el campo — hay que verificarlas (o aprobarlas a
-  mano desde `/admin`) antes de poder registrarles una propiedad nueva. No se "perdonó" a las cuentas
-  viejas a propósito, para probar el flujo tal cual lo verá un arrendador real.
+- [x] `/admin` tiene una quinta tarjeta "Verificaciones pendientes" que lleva a `/admin/verificaciones`
+      — una cola de revisión con ambas fotos y el botón de aprobar, una debajo de la otra, para no
+      tener que entrar arrendador por arrendador. Se agregó porque, probándolo con Thomas, el único
+      lugar donde encontraba el caso pendiente era navegando a mano a `/admin/arrendadores/[id]` — no
+      había ninguna señal desde el panel principal.
+- [x] **Bug real encontrado y arreglado (2026-09-22), probado con la cuenta real de Thomas:** las fotos
+      tomadas con la cámara nativa de un iPhone a veces se suben en formato **HEIC**, que ningún
+      navegador puede mostrar en un `<img>` ni face-api puede leer para comparar rostros — el match
+      fallaba en silencio (`rostrosCoinciden: null`, "no se detectó rostro") y encima la miniatura
+      quedaba rota, sin ningún aviso de qué pasó. Se agregó conversión a JPEG en dos capas:
+      - **En el navegador**, apenas se elige el archivo (`src/lib/heic-cliente.ts`,
+        `convertirSiEsHeic()`, usa `heic-convert/browser` con `libheif-js`/WASM) — esto es lo que
+        arregla la vista previa Y el match de rostros, porque ambos pasan por el archivo ya convertido.
+      - **En el servidor**, como respaldo (`src/lib/normalizar-imagen.ts`, `normalizarImagen()`, mismo
+        `heic-convert` pero build de Node) por si la conversión del navegador falla por alguna razón.
+      - `heic-convert` se agregó a `serverExternalPackages` en `next.config.ts` junto con
+        `tesseract.js`, por el mismo motivo (carga un WASM en tiempo de ejecución que Turbopack rompe
+        si lo empaqueta).
+      - La foto de cédula que Thomas ya tenía guardada en HEIC (de antes de este arreglo) se
+        reconvirtió a mano una sola vez con un script — no hace falta repetirlo, era solo por los datos
+        viejos.
 
 ## Fuera de alcance (deliberado, no es una pantalla del artifact)
 

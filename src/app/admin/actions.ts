@@ -17,5 +17,5 @@ export async function verificarArrendadorManualmente(formData: FormData) {
     data: { identidadVerificada: true, identidadVerificadaEn: new Date() },
   });
 
-  revalidatePath("/admin/arrendadores");
+  revalidatePath("/admin", "layout");
 }

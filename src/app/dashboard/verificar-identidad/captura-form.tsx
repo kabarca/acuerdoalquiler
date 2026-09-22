@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { verificarIdentidadPropia } from "./actions";
 import { compararRostros, type ResultadoMatch } from "@/lib/comparar-rostros";
+import { convertirSiEsHeic } from "@/lib/heic-cliente";
 
 type Paso =
   | "inicio"
@@ -37,19 +38,21 @@ export function CapturaIdentidadArrendador({
 
   const primerNombre = nombreArrendador.split(" ")[0];
 
-  function elegirDocumento(file: File) {
-    setDocumentoFile(file);
-    setDocumentoPreview(URL.createObjectURL(file));
+  async function elegirDocumento(file: File) {
+    const convertido = await convertirSiEsHeic(file);
+    setDocumentoFile(convertido);
+    setDocumentoPreview(URL.createObjectURL(convertido));
     setPaso("selfie");
   }
 
   async function elegirSelfie(file: File) {
-    setSelfieFile(file);
-    setSelfiePreview(URL.createObjectURL(file));
     setPaso("procesando");
+    const convertido = await convertirSiEsHeic(file);
+    setSelfieFile(convertido);
+    setSelfiePreview(URL.createObjectURL(convertido));
 
     if (documentoFile) {
-      const res = await compararRostros(documentoFile, file);
+      const res = await compararRostros(documentoFile, convertido);
       setResultado(res);
     }
     setPaso("confirmar");

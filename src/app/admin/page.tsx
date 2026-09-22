@@ -1,22 +1,26 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { IconBuilding, IconUsers, IconGrid, IconAlert } from "@/lib/icons";
+import { IconBuilding, IconUsers, IconGrid, IconAlert, IconShield } from "@/lib/icons";
 
 export default async function AdminPage() {
-  const [arrendadores, propiedades, inquilinosActivos, inquilinosTotal, morosos] = await Promise.all([
-    prisma.arrendador.count(),
-    prisma.propiedad.count(),
-    prisma.inquilino.count({ where: { activo: true } }),
-    prisma.inquilino.count(),
-    prisma.inquilino.count({
-      where: {
-        OR: [
-          { facturas: { some: { estado: "ATRASADA" } } },
-          { disputas: { some: { resolucion: "MOROSO" } } },
-        ],
-      },
-    }),
-  ]);
+  const [arrendadores, propiedades, inquilinosActivos, inquilinosTotal, morosos, verificacionesPendientes] =
+    await Promise.all([
+      prisma.arrendador.count(),
+      prisma.propiedad.count(),
+      prisma.inquilino.count({ where: { activo: true } }),
+      prisma.inquilino.count(),
+      prisma.inquilino.count({
+        where: {
+          OR: [
+            { facturas: { some: { estado: "ATRASADA" } } },
+            { disputas: { some: { resolucion: "MOROSO" } } },
+          ],
+        },
+      }),
+      prisma.arrendador.count({
+        where: { identidadVerificada: false, documentoFotoBytes: { not: null } },
+      }),
+    ]);
 
   const TARJETAS = [
     { label: "Arrendadores", valor: arrendadores, icon: IconGrid, href: "/admin/arrendadores" },
@@ -36,6 +40,14 @@ export default async function AdminPage() {
       href: "/admin/morosos",
       tono: morosos > 0,
     },
+    {
+      label: "Verificaciones pendientes",
+      valor: verificacionesPendientes,
+      icon: IconShield,
+      nota: "Arrendadores esperando revisión manual de identidad",
+      href: "/admin/verificaciones",
+      tono: verificacionesPendientes > 0,
+    },
   ];
 
   return (
@@ -48,7 +60,7 @@ export default async function AdminPage() {
         </p>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {TARJETAS.map((t) => (
           <Link
             key={t.label}

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { procesarVerificacion } from "./actions";
 import { compararRostros, type ResultadoMatch } from "@/lib/comparar-rostros";
+import { convertirSiEsHeic } from "@/lib/heic-cliente";
 
 type Paso = "inicio" | "cedula" | "selfie" | "procesando" | "confirmar" | "enviando" | "listo" | "error";
 
@@ -25,19 +26,21 @@ export function CapturaForm({
 
   const primerNombre = nombreInquilino.split(" ")[0];
 
-  function elegirCedula(file: File) {
-    setCedulaFile(file);
-    setCedulaPreview(URL.createObjectURL(file));
+  async function elegirCedula(file: File) {
+    const convertido = await convertirSiEsHeic(file);
+    setCedulaFile(convertido);
+    setCedulaPreview(URL.createObjectURL(convertido));
     setPaso("selfie");
   }
 
   async function elegirSelfie(file: File) {
-    setSelfieFile(file);
-    setSelfiePreview(URL.createObjectURL(file));
     setPaso("procesando");
+    const convertido = await convertirSiEsHeic(file);
+    setSelfieFile(convertido);
+    setSelfiePreview(URL.createObjectURL(convertido));
 
     if (cedulaFile) {
-      const res = await compararRostros(cedulaFile, file);
+      const res = await compararRostros(cedulaFile, convertido);
       setResultado(res);
     }
     setPaso("confirmar");
