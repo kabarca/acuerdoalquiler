@@ -213,3 +213,36 @@ export async function enviarVerificacionIdentidad(params: {
     html,
   });
 }
+
+// Le avisa al equipo de Rentia (esAdmin=true) cuando la verificación de un
+// arrendador queda pendiente de revisión manual — o sea, cuando el match de
+// rostros en su navegador NO confirmó automáticamente que las fotos
+// coinciden. Ver verificarIdentidadPropia() en dashboard/verificar-identidad/actions.ts.
+export async function avisarAdminVerificacionPendiente(params: {
+  paraEmails: string[];
+  nombreArrendador: string;
+  emailArrendador: string;
+  linkRevision: string;
+}) {
+  const html = envoltura(`
+    <div style="padding:32px;">
+      <div style="font-weight:700; font-size:13px; color:${WARNING};">VERIFICACIÓN PENDIENTE DE REVISIÓN</div>
+      <h1 style="font-size:19px; margin:8px 0 6px;">Un arrendador necesita revisión manual</h1>
+      <p style="color:${INK_SOFT}; font-size:14.5px; line-height:1.6;">
+        <strong>${params.nombreArrendador}</strong> (${params.emailArrendador}) envió su foto de documento
+        y selfie, pero el sistema no confirmó automáticamente que coinciden. Mientras no se apruebe, no
+        puede registrar propiedades en Rentia.
+      </p>
+      <a href="${params.linkRevision}" style="display:block; margin-top:20px; background:${PRIMARY}; color:#fff; border-radius:10px; padding:15px; text-align:center; font-weight:700; font-size:15px; text-decoration:none;">
+        Revisar y aprobar
+      </a>
+    </div>
+  `);
+
+  return resend.emails.send({
+    from: REMITENTE,
+    to: params.paraEmails,
+    subject: `Verificación pendiente — ${params.nombreArrendador}`,
+    html,
+  });
+}

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getArrendadorActual } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createWorker } from "tesseract.js";
+import { avisarAdminVerificacionPendiente } from "@/lib/resend";
 
 export async function verificarIdentidadPropia(
   formData: FormData,
@@ -58,6 +59,27 @@ export async function verificarIdentidadPropia(
   });
 
   revalidatePath("/dashboard", "layout");
+
+  if (!verificada) {
+    try {
+      const admins = await prisma.arrendador.findMany({
+        where: { esAdmin: true },
+        select: { email: true },
+      });
+      if (admins.length > 0) {
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+        await avisarAdminVerificacionPendiente({
+          paraEmails: admins.map((a) => a.email),
+          nombreArrendador: arrendador.nombre,
+          emailArrendador: arrendador.email,
+          linkRevision: `${baseUrl}/admin/arrendadores/${arrendador.id}`,
+        });
+      }
+    } catch {
+      // Resend todavía no está conectado (ver Configuración) — la verificación
+      // queda registrada igual, solo no se manda el aviso por correo.
+    }
+  }
 
   return { ok: true, verificada };
 }

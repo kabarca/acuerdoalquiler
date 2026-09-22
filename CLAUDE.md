@@ -177,7 +177,14 @@ mecanismo que la del inquilino, pero es requisito para poder operar, no opcional
       que muestra ambas fotos y un botón "Aprobar verificación manualmente"
       (`verificarArrendadorManualmente()` en `admin/actions.ts`). Las fotos se sirven vía
       `/foto-verificacion-arrendador/[arrendadorId]/[tipo]/route.ts`, protegida con `esAdmin` (a
-      diferencia de la del inquilino, que solo la ve su propio arrendador).
+      diferencia de la del inquilino, que solo la ve su propio arrendador). **Confirmado con Thomas
+      (2026-09-22): la aprobación es automática cuando el match coincide — manual solo como respaldo
+      cuando el navegador no logra confirmarlo, no un paso obligatorio para toda verificación.**
+- [x] Cuando queda pendiente de revisión manual, se le avisa por correo a **todos los `esAdmin=true`**
+      (`avisarAdminVerificacionPendiente()` en `lib/resend.ts`, llamado desde
+      `verificarIdentidadPropia()`) con un link directo a `/admin/arrendadores/[id]`. Se manda a todos
+      los admins (no a un correo fijo en `config.ts`) para que cualquier cuenta que se marque
+      `esAdmin=true` en el futuro reciba el aviso automáticamente, sin tocar código.
 - [x] **Mientras `identidadVerificada` sea `false`, no puede registrar propiedades**: bloqueado en dos
       capas — `/dashboard/propiedades/nueva` (Server Component) muestra una pantalla explicativa en vez
       del formulario, y `crearPropiedadConInquilino()` (`dashboard/actions.ts`) también revisa el flag
