@@ -2,61 +2,9 @@
 
 import { useState } from "react";
 import { procesarVerificacion } from "./actions";
+import { compararRostros, type ResultadoMatch } from "@/lib/comparar-rostros";
 
 type Paso = "inicio" | "cedula" | "selfie" | "procesando" | "confirmar" | "enviando" | "listo" | "error";
-
-type ResultadoMatch = {
-  coincide: boolean | null;
-  distancia: number | null;
-  sinRostro: boolean;
-};
-
-let modelosCargados = false;
-
-async function cargarModelos() {
-  const faceapi = await import("@vladmandic/face-api");
-  if (!modelosCargados) {
-    await Promise.all([
-      faceapi.nets.tinyFaceDetector.loadFromUri("/models"),
-      faceapi.nets.faceLandmark68Net.loadFromUri("/models"),
-      faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
-    ]);
-    modelosCargados = true;
-  }
-  return faceapi;
-}
-
-function fileToImage(file: File): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error("No se pudo leer la imagen"));
-    img.src = URL.createObjectURL(file);
-  });
-}
-
-async function compararRostros(cedulaFile: File, selfieFile: File): Promise<ResultadoMatch> {
-  try {
-    const faceapi = await cargarModelos();
-    const options = new faceapi.TinyFaceDetectorOptions();
-
-    const [imgCedula, imgSelfie] = await Promise.all([fileToImage(cedulaFile), fileToImage(selfieFile)]);
-
-    const [resCedula, resSelfie] = await Promise.all([
-      faceapi.detectSingleFace(imgCedula, options).withFaceLandmarks().withFaceDescriptor(),
-      faceapi.detectSingleFace(imgSelfie, options).withFaceLandmarks().withFaceDescriptor(),
-    ]);
-
-    if (!resCedula || !resSelfie) {
-      return { coincide: null, distancia: null, sinRostro: true };
-    }
-
-    const distancia = faceapi.euclideanDistance(resCedula.descriptor, resSelfie.descriptor);
-    return { coincide: distancia < 0.6, distancia, sinRostro: false };
-  } catch {
-    return { coincide: null, distancia: null, sinRostro: true };
-  }
-}
 
 export function CapturaForm({
   token,

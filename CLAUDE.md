@@ -158,6 +158,39 @@ en `schema.prisma`):
   verdad valdría la pena agregar un consentimiento explícito y revisar si aplica alguna norma de
   protección de datos en Costa Rica para este tipo de dato.
 
+**Verificación de identidad del ARRENDADOR** (agregada el 2026-09-22 a pedido de Thomas — mismo
+mecanismo que la del inquilino, pero es requisito para poder operar, no opcional):
+- [x] Campos de verificación directo en `Arrendador` (no en un modelo aparte como la del inquilino,
+      porque no necesita link por correo — el arrendador ya tiene sesión): `tipoDocumentoIdentidad`
+      (`CEDULA` o `PASAPORTE`), `numeroDocumentoIdentidad`, `documentoFotoBytes/Tipo`,
+      `selfieFotoBytes/Tipo`, `textoExtraidoDocumento`, `rostrosCoinciden`, `distanciaRostros`,
+      y el flag que realmente importa: `identidadVerificada` (bool).
+- [x] `/dashboard/verificar-identidad`: mismo flujo de captura que `/verificar/[token]` (selector de
+      cédula/pasaporte primero, luego foto de documento + selfie, match en el navegador con
+      `compararRostros()` — **se movió la lógica compartida a `src/lib/comparar-rostros.ts`** para no
+      duplicarla entre inquilino y arrendador), pero llama a `verificarIdentidadPropia()` en vez de un
+      Server Action con token. Acepta `?next=` para volver a donde el arrendador venía (típicamente
+      `/dashboard/propiedades/nueva`).
+- [x] **`identidadVerificada` solo queda `true` automáticamente si `rostrosCoinciden === true`** (el
+      match calculado en su navegador). Si no hay match o no se detectó rostro, la verificación se
+      guarda igual (fotos, OCR) pero queda pendiente de revisión manual — ver `/admin/arrendadores/[id]`,
+      que muestra ambas fotos y un botón "Aprobar verificación manualmente"
+      (`verificarArrendadorManualmente()` en `admin/actions.ts`). Las fotos se sirven vía
+      `/foto-verificacion-arrendador/[arrendadorId]/[tipo]/route.ts`, protegida con `esAdmin` (a
+      diferencia de la del inquilino, que solo la ve su propio arrendador).
+- [x] **Mientras `identidadVerificada` sea `false`, no puede registrar propiedades**: bloqueado en dos
+      capas — `/dashboard/propiedades/nueva` (Server Component) muestra una pantalla explicativa en vez
+      del formulario, y `crearPropiedadConInquilino()` (`dashboard/actions.ts`) también revisa el flag
+      por si acaso y redirige a la verificación. El panel principal (`/dashboard`) muestra además un
+      banner recordatorio si todavía no está verificado, para que no se entere solo al intentar
+      registrar una propiedad.
+- [x] `/admin/arrendadores` muestra una columna "Identidad" (Verificado / Por revisar / Sin enviar) y
+      un link "Ver →" a `/admin/arrendadores/[id]` con el detalle completo.
+- Las cuentas de prueba existentes (`arrendador@prueba.local`, las de Thomas) quedaron con
+  `identidadVerificada=false` por defecto al agregar el campo — hay que verificarlas (o aprobarlas a
+  mano desde `/admin`) antes de poder registrarles una propiedad nueva. No se "perdonó" a las cuentas
+  viejas a propósito, para probar el flujo tal cual lo verá un arrendador real.
+
 ## Fuera de alcance (deliberado, no es una pantalla del artifact)
 
 - Pago automático recurrente con tarjeta guardada (el toggle existe visualmente en `PaymentPage` pero no
@@ -203,9 +236,10 @@ un repositorio y proyecto totalmente separados, sin dependencias entre ambos:
 - El inquilino no crea cuenta — sus datos los ingresa el arrendador. Hay que ser claro en el correo
   de factura sobre quién le está cobrando y por qué tiene sus datos.
 - Datos de tarjeta nunca tocan el servidor propio — ver nota de seguridad arriba.
-- Foto de cédula + selfie del inquilino (ver Verificación de identidad arriba) es dato sensible —
-  hoy se guarda sin cifrar en la misma base de datos (igual que el comprobante de transferencia) y
-  sin checkbox de consentimiento explícito. Revisar antes de producción.
+- Foto de cédula/pasaporte + selfie, tanto del inquilino como del arrendador (ver Verificación de
+  identidad arriba), es dato sensible — hoy se guarda sin cifrar en la misma base de datos (igual que
+  el comprobante de transferencia) y, del lado del inquilino, sin checkbox de consentimiento explícito.
+  Revisar antes de producción.
 
 ## Decisiones pendientes de Thomas (preguntar antes de asumir)
 
@@ -225,6 +259,9 @@ registro) para poder probar el sistema sin cuentas reales:
 - Correo: `arrendador@prueba.local`
 - Contraseña: `Prueba1234!`
 - Tiene `esAdmin=true`, así que con esta cuenta también se puede ver `/admin`.
+- Tiene `identidadVerificada=true` (se probó el flujo real de `/dashboard/verificar-identidad` con
+  esta cuenta el 2026-09-22, con fotos de prueba de Unsplash — ver nota de imágenes reales en la
+  sección de diseño).
 
 ## Git
 

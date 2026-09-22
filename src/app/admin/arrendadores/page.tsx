@@ -32,7 +32,9 @@ export default async function AdminArrendadoresPage() {
                 <th className="px-4.5 py-3">Teléfono</th>
                 <th className="px-4.5 py-3">Propiedades</th>
                 <th className="px-4.5 py-3">Cuenta bancaria</th>
+                <th className="px-4.5 py-3">Identidad</th>
                 <th className="px-4.5 py-3">Registrado</th>
+                <th className="px-4.5 py-3"></th>
               </tr>
             </thead>
             <tbody>
@@ -52,8 +54,28 @@ export default async function AdminArrendadoresPage() {
                   <td className="px-4.5 py-3.5 text-ink-soft">
                     {a.tipoCuentaBancaria === "INTERNACIONAL" ? "Internacional" : "Nacional"}
                   </td>
+                  <td className="px-4.5 py-3.5">
+                    {a.identidadVerificada ? (
+                      <span className="rounded-full bg-success-bg px-2.5 py-1 text-xs font-bold text-success">
+                        Verificado
+                      </span>
+                    ) : a.documentoFotoBytes ? (
+                      <span className="rounded-full bg-warning-bg px-2.5 py-1 text-xs font-bold text-warning">
+                        Por revisar
+                      </span>
+                    ) : (
+                      <span className="rounded-full bg-bg px-2.5 py-1 text-xs font-bold text-ink-faint">
+                        Sin enviar
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4.5 py-3.5 text-ink-soft">
                     {a.creadoEn.toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" })}
+                  </td>
+                  <td className="px-4.5 py-3.5 text-right">
+                    <Link href={`/admin/arrendadores/${a.id}`} className="text-xs font-semibold text-accent">
+                      Ver →
+                    </Link>
                   </td>
                 </tr>
               ))}

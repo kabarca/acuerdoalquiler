@@ -15,6 +15,11 @@ enum TipoCuentaBancaria {
   INTERNACIONAL
 }
 
+enum TipoDocumentoIdentidad {
+  CEDULA
+  PASAPORTE
+}
+
 // Un arrendador = una cuenta (login vía Supabase Auth).
 model Arrendador {
   id                 String              @id @default(uuid())
@@ -35,6 +40,22 @@ model Arrendador {
   direccionBanco     String?
   direccionTitular   String?
   numeroRuta         String? // routing/ABA — solo aplica a algunos bancos (p. ej. EE. UU.)
+  // Verificación de identidad del arrendador: mismo mecanismo que la del
+  // inquilino (foto de documento + selfie, comparadas en el navegador con
+  // face-api.js), pero corre directo en el dashboard (ya tiene sesión, no
+  // necesita link por correo). Mientras identidadVerificada sea false, no
+  // puede registrar propiedades — ver crearPropiedadConInquilino().
+  tipoDocumentoIdentidad   TipoDocumentoIdentidad?
+  numeroDocumentoIdentidad String?
+  documentoFotoBytes       Bytes?
+  documentoFotoTipo        String?
+  selfieFotoBytes          Bytes?
+  selfieFotoTipo           String?
+  textoExtraidoDocumento   String?
+  rostrosCoinciden         Boolean?
+  distanciaRostros         Float?
+  identidadVerificada      Boolean             @default(false)
+  identidadVerificadaEn    DateTime?
   // true solo para las cuentas del equipo de Rentia — les da acceso a
   // /admin (ver lib/auth.ts). Nunca se ofrece en el registro público.
   esAdmin            Boolean             @default(false)
