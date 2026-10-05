@@ -230,10 +230,10 @@ export default function Home() {
 
             <div className="mx-auto flex max-w-sm flex-col gap-6 rounded-2xl border-2 border-primary bg-bg p-10 text-center">
               <span className="mx-auto w-fit rounded-full bg-primary-light px-3.5 py-1.5 text-[12.5px] font-bold text-primary">
-                Gratis
+                Plan único
               </span>
               <div>
-                <span className="font-heading text-5xl font-bold">₡0</span>
+                <span className="font-heading text-5xl font-bold">Sin costo</span>
               </div>
               <ul className="flex flex-col gap-2.5 text-left text-[14.5px] text-ink-soft">
                 <li className="flex items-center gap-2.5">
