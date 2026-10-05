@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getArrendadorActual } from "@/lib/auth";
 import { cerrarSesion } from "./actions";
+import { VolverAlPanel } from "./volver-al-panel";
 import { IconGrid, IconBuilding, IconUsers, IconCard, IconGear, IconHelp, IconShield } from "@/lib/icons";
 
 const NAV = [
@@ -63,7 +64,10 @@ export default async function DashboardLayout({
         </div>
       </aside>
 
-      <main className="flex-1 overflow-x-hidden">{children}</main>
+      <main className="flex-1 overflow-x-hidden">
+        <VolverAlPanel />
+        {children}
+      </main>
     </div>
   );
 }

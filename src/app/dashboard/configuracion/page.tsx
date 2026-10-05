@@ -48,16 +48,18 @@ export default async function ConfiguracionPage() {
         <DatosBancariosForm arrendador={arrendador} />
       </div>
 
-      <div className="max-w-xl rounded-2xl border border-border bg-surface p-6.5">
-        <h2 className="text-[15.5px] font-bold">Integraciones</h2>
-        <p className="mt-1 text-[13px] text-ink-soft">
-          Necesarias para cobrar y enviar correos de verdad.
-        </p>
-        <div className="mt-3">
-          <EstadoConexion conectado={Boolean(process.env.ONVOPAY_SECRET_KEY)} nombre="Onvopay (cobro con tarjeta)" />
-          <EstadoConexion conectado={Boolean(process.env.RESEND_API_KEY)} nombre="Resend (envío de correos)" />
+      {arrendador.esAdmin && (
+        <div className="max-w-xl rounded-2xl border border-border bg-surface p-6.5">
+          <h2 className="text-[15.5px] font-bold">Integraciones</h2>
+          <p className="mt-1 text-[13px] text-ink-soft">
+            Necesarias para cobrar y enviar correos de verdad. Solo la ven los administradores.
+          </p>
+          <div className="mt-3">
+            <EstadoConexion conectado={Boolean(process.env.ONVOPAY_SECRET_KEY)} nombre="Onvopay (cobro con tarjeta)" />
+            <EstadoConexion conectado={Boolean(process.env.RESEND_API_KEY)} nombre="Resend (envío de correos)" />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
