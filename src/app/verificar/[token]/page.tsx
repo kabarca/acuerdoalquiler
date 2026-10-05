@@ -26,10 +26,15 @@ function Mensaje({ titulo, texto }: { titulo: string; texto: string }) {
 
 export default async function VerificarPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string }>;
+  searchParams: Promise<{ previa?: string }>;
 }) {
   const { token } = await params;
+  // ?previa=1 deja al arrendador recorrer las pantallas tal como las ve el
+  // inquilino, sin enviar nada de verdad.
+  const { previa } = await searchParams;
 
   const verificacion = await prisma.verificacionIdentidad.findUnique({
     where: { token },
@@ -58,7 +63,7 @@ export default async function VerificarPage({
     return (
       <Mensaje
         titulo="Este enlace venció"
-        texto="Por seguridad, los enlaces de verificación vencen después de 48 horas. Pídale a su arrendador que le envíe uno nuevo."
+        texto="Por seguridad, los enlaces de verificación vencen después de 7 días. Pídale a su arrendador que le envíe uno nuevo."
       />
     );
   }
@@ -71,6 +76,7 @@ export default async function VerificarPage({
           token={token}
           nombreInquilino={verificacion.inquilino.nombre}
           direccionPropiedad={verificacion.inquilino.propiedad.direccion}
+          soloVista={previa === "1"}
         />
       </div>
     </div>

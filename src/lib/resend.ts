@@ -8,6 +8,32 @@ export const resend = new Resend(process.env.RESEND_API_KEY || "re_sin_configura
 
 const REMITENTE = process.env.RESEND_FROM_EMAIL ?? "cobros@ejemplo.com";
 
+// Hasta que Thomas conecte Resend de verdad, RESEND_API_KEY queda vacía y
+// ningún correo sale. Todo el código que manda correos pasa por
+// intentarEnvio(): si no hay llave ni siquiera lo intenta (más rápido y sin
+// ruido en los logs) y devuelve el motivo para que la app lo muestre.
+export function correoConfigurado() {
+  return Boolean(process.env.RESEND_API_KEY);
+}
+
+export async function intentarEnvio(
+  enviar: () => Promise<{ error: { message: string } | null }>,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (!correoConfigurado()) {
+    return { ok: false, error: "El envío de correos todavía no está configurado" };
+  }
+  try {
+    const resultado = await enviar();
+    // El SDK de Resend NO lanza excepción cuando falla, devuelve { error }.
+    if (resultado.error) {
+      return { ok: false, error: resultado.error.message };
+    }
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "No se pudo enviar el correo" };
+  }
+}
+
 // Paleta de marca de Rentia, en variables ya resueltas (los clientes de
 // correo no soportan `var(--token)`).
 const INK = "#101826";
@@ -205,7 +231,7 @@ export async function enviarVerificacionIdentidad(params: {
         Verificar mi identidad
       </a>
       <p style="color:${INK_FAINT}; font-size:12px; margin-top:14px;">
-        Este enlace vence en 48 horas por seguridad.
+        Este enlace vence en 7 días por seguridad.
       </p>
     </div>
   `);

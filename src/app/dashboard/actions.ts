@@ -1,13 +1,13 @@
 "use server";
 
-import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getArrendadorActual } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { calcularFechaVencimiento, enteroDia, hoyCostaRica, periodoDe } from "@/lib/facturacion";
-import { enviarInvitacion, enviarVerificacionIdentidad as enviarVerificacionIdentidadEmail } from "@/lib/resend";
+import { enviarInvitacion, intentarEnvio } from "@/lib/resend";
+import { crearYEnviarVerificacion } from "@/lib/verificacion-inquilino";
 
 function revalidarPanel() {
   revalidatePath("/dashboard", "layout");
@@ -55,7 +55,7 @@ export async function crearPropiedadConInquilino(formData: FormData) {
     },
   });
 
-  await prisma.inquilino.create({
+  const inquilino = await prisma.inquilino.create({
     data: {
       propiedadId: propiedad.id,
       nombre,
@@ -67,6 +67,9 @@ export async function crearPropiedadConInquilino(formData: FormData) {
       fechaFinContrato: fechaOpcional(formData, "fechaFinContrato"),
     },
   });
+
+  // Al registrar al inquilino se le manda solo su enlace de verificación.
+  await crearYEnviarVerificacion(inquilino.id);
 
   revalidarPanel();
   redirect(`/dashboard/propiedades/${propiedad.id}`);
@@ -82,7 +85,7 @@ export async function crearInquilino(formData: FormData) {
   const montoRenta = formData.get("montoRenta") as string;
   const dias = diasDeFacturacion(formData);
 
-  await prisma.inquilino.create({
+  const inquilino = await prisma.inquilino.create({
     data: {
       propiedadId,
       nombre,
@@ -94,6 +97,8 @@ export async function crearInquilino(formData: FormData) {
       fechaFinContrato: fechaOpcional(formData, "fechaFinContrato"),
     },
   });
+
+  await crearYEnviarVerificacion(inquilino.id);
 
   revalidarPanel();
 }
@@ -224,22 +229,26 @@ export async function invitarInquilino(formData: FormData) {
 
   const actualizado = await prisma.inquilino.update({
     where: { id: inquilino.id },
-    data: { email, montoRenta, diaCobro, invitacionEnviadaEn: new Date() },
+    data: { email, montoRenta, diaCobro },
   });
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-  try {
-    await enviarInvitacion({
+  // "Enviada el…" solo se guarda si el correo de verdad salió.
+  const envio = await intentarEnvio(() =>
+    enviarInvitacion({
       paraEmail: actualizado.email,
       nombreInquilino: actualizado.nombre,
       direccionPropiedad: propiedad.direccion,
       monto: Number(actualizado.montoRenta).toLocaleString("es-CR"),
       linkInvitacion: `${baseUrl}/invitacion/${actualizado.id}`,
+    }),
+  );
+  if (envio.ok) {
+    await prisma.inquilino.update({
+      where: { id: actualizado.id },
+      data: { invitacionEnviadaEn: new Date() },
     });
-  } catch {
-    // Resend todavía no está conectado (ver Configuración) — la invitación
-    // queda registrada y el link funciona igual, solo no se manda el correo.
   }
 
   revalidarPanel();
@@ -260,41 +269,7 @@ export async function enviarVerificacionIdentidad(formData: FormData) {
     throw new Error("Esta propiedad todavía no tiene inquilino — regístrelo primero.");
   }
 
-  const token = randomBytes(24).toString("hex");
-  const tokenExpiraEn = new Date(Date.now() + 48 * 60 * 60 * 1000);
-
-  await prisma.verificacionIdentidad.upsert({
-    where: { inquilinoId: inquilino.id },
-    create: { inquilinoId: inquilino.id, token, tokenExpiraEn, enviadoEn: new Date() },
-    update: {
-      token,
-      tokenExpiraEn,
-      estado: "PENDIENTE",
-      enviadoEn: new Date(),
-      completadoEn: null,
-      cedulaFotoBytes: null,
-      cedulaFotoTipo: null,
-      selfieFotoBytes: null,
-      selfieFotoTipo: null,
-      textoExtraidoCedula: null,
-      rostrosCoinciden: null,
-      distanciaRostros: null,
-    },
-  });
-
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-
-  try {
-    await enviarVerificacionIdentidadEmail({
-      paraEmail: inquilino.email,
-      nombreInquilino: inquilino.nombre,
-      direccionPropiedad: propiedad.direccion,
-      linkVerificacion: `${baseUrl}/verificar/${token}`,
-    });
-  } catch {
-    // Resend todavía no está conectado (ver Configuración) — la verificación
-    // queda registrada y el link funciona igual, solo no se manda el correo.
-  }
+  await crearYEnviarVerificacion(inquilino.id);
 
   revalidarPanel();
   redirect(`/dashboard/propiedades/${propiedadId}`);
@@ -444,6 +419,20 @@ export async function actualizarDatosBancarios(formData: FormData) {
       direccionTitular: internacional ? (formData.get("direccionTitular") as string) || null : null,
       numeroRuta: internacional ? (formData.get("numeroRuta") as string) || null : null,
     },
+  });
+
+  revalidarPanel();
+}
+
+// El arrendador ya le pasó el enlace de pago al inquilino por otro medio
+// (p. ej. WhatsApp) porque el correo no pudo salir.
+export async function marcarFacturaEnviadaManual(formData: FormData) {
+  const arrendador = await getArrendadorActual();
+  const facturaId = formData.get("facturaId") as string;
+
+  await prisma.factura.updateMany({
+    where: { id: facturaId, inquilino: { propiedad: { arrendadorId: arrendador.id } } },
+    data: { facturaEnviadaEn: new Date(), errorEnvio: null },
   });
 
   revalidarPanel();

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { enviarFactura } from "@/lib/resend";
+import { enviarFactura, intentarEnvio } from "@/lib/resend";
 
 const ZONA = "America/Costa_Rica";
 
@@ -49,27 +49,39 @@ export type ResultadoFacturacion = {
   fecha: string;
   generadas: number;
   enviadas: number;
-  fallidas: number;
+  // No salieron por correo; el arrendador las ve como aviso en su panel.
+  noEnviadas: number;
 };
+
+const TAMANO_LOTE = 10;
 
 // Corre una vez al día (ver app/api/cron/facturas). Es idempotente: si se
 // ejecuta dos veces el mismo día, o se salta un día, no duplica ni pierde
-// facturas — por eso compara con ">=" y no con "==".
+// facturas — por eso compara con ">=" y no con "==". Los inquilinos se
+// procesan de 10 en 10 en paralelo para que el cron termine rápido aunque
+// haya muchos.
 export async function procesarFacturacionAutomatica(ahora = new Date()): Promise<ResultadoFacturacion> {
   const { anio, mes, dia } = hoyCostaRica(ahora);
   const periodo = periodoDe(anio, mes);
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const inicioDeHoy = new Date(Date.UTC(anio, mes - 1, dia, 6));
-  const resultado: ResultadoFacturacion = { fecha: `${periodo}-${String(dia).padStart(2, "0")}`, generadas: 0, enviadas: 0, fallidas: 0 };
+  const resultado: ResultadoFacturacion = {
+    fecha: `${periodo}-${String(dia).padStart(2, "0")}`,
+    generadas: 0,
+    enviadas: 0,
+    noEnviadas: 0,
+  };
 
   const inquilinos = await prisma.inquilino.findMany({
     where: { activo: true },
     include: { propiedad: true, facturas: { where: { periodo } } },
   });
 
-  for (const inquilino of inquilinos) {
-    if (inquilino.fechaInicioContrato && inquilino.fechaInicioContrato > ahora) continue;
-    if (inquilino.fechaFinContrato && inquilino.fechaFinContrato < inicioDeHoy) continue;
+  type InquilinoConDatos = (typeof inquilinos)[number];
+
+  async function procesar(inquilino: InquilinoConDatos) {
+    if (inquilino.fechaInicioContrato && inquilino.fechaInicioContrato > ahora) return;
+    if (inquilino.fechaFinContrato && inquilino.fechaFinContrato < inicioDeHoy) return;
 
     let factura = inquilino.facturas[0];
 
@@ -92,11 +104,11 @@ export async function procesarFacturacionAutomatica(ahora = new Date()): Promise
       resultado.generadas++;
     }
 
-    if (!factura || factura.estado !== "PENDIENTE" || factura.facturaEnviadaEn) continue;
-    if (dia < Math.max(inquilino.diaEnvio, inquilino.diaGeneracion)) continue;
+    if (!factura || factura.estado !== "PENDIENTE" || factura.facturaEnviadaEn) return;
+    if (dia < Math.max(inquilino.diaEnvio, inquilino.diaGeneracion)) return;
 
-    try {
-      const envio = await enviarFactura({
+    const envio = await intentarEnvio(() =>
+      enviarFactura({
         paraEmail: inquilino.email,
         nombreInquilino: inquilino.nombre,
         direccionPropiedad: inquilino.propiedad.direccion,
@@ -104,22 +116,25 @@ export async function procesarFacturacionAutomatica(ahora = new Date()): Promise
         fechaVencimiento: formatearFecha(factura.fechaVencimiento),
         periodo,
         linkPago: `${baseUrl}/pagar/${factura.id}`,
-      });
-      if (envio.error) {
-        throw new Error(envio.error.message);
-      }
+      }),
+    );
+
+    if (envio.ok) {
       await prisma.factura.update({
         where: { id: factura.id },
         data: { facturaEnviadaEn: new Date(), errorEnvio: null },
       });
       resultado.enviadas++;
-    } catch (error) {
-      await prisma.factura.update({
-        where: { id: factura.id },
-        data: { errorEnvio: error instanceof Error ? error.message : "No se pudo enviar el correo" },
-      });
-      resultado.fallidas++;
+    } else {
+      if (factura.errorEnvio !== envio.error) {
+        await prisma.factura.update({ where: { id: factura.id }, data: { errorEnvio: envio.error } });
+      }
+      resultado.noEnviadas++;
     }
+  }
+
+  for (let i = 0; i < inquilinos.length; i += TAMANO_LOTE) {
+    await Promise.all(inquilinos.slice(i, i + TAMANO_LOTE).map(procesar));
   }
 
   return resultado;

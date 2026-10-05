@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getArrendadorActual } from "@/lib/auth";
 import { CamposFacturacion } from "@/components/campos-facturacion";
+import { AvisoFacturaNoEnviada } from "@/components/aviso-factura";
+import { BotonCopiarEnlace } from "@/components/boton-copiar-enlace";
 import {
   crearInquilino,
   actualizarInquilino,
@@ -78,6 +80,7 @@ export default async function PropiedadDetallePage({
   }
 
   const inquilino = propiedad.inquilinos[0];
+  const verificacion = inquilino?.verificacionIdentidad ?? null;
   const hoy = new Date();
   const periodoActual = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}`;
   const facturaDelMes = inquilino?.facturas.find((f) => f.periodo === periodoActual);
@@ -179,10 +182,13 @@ export default async function PropiedadDetallePage({
                             : `Pendiente de envío (día ${inquilino.diaEnvio})`}
                     </span>
                   </div>
-                  {facturaDelMes?.errorEnvio && !facturaDelMes.facturaEnviadaEn && (
-                    <p className="rounded-lg bg-danger-bg px-3 py-2 text-xs text-danger">
-                      El correo no salió ({facturaDelMes.errorEnvio}). Se reintenta solo cada día.
-                    </p>
+                  {facturaDelMes && !facturaDelMes.facturaEnviadaEn && facturaDelMes.errorEnvio && (
+                    <AvisoFacturaNoEnviada
+                      facturaId={facturaDelMes.id}
+                      inquilino={inquilino.nombre}
+                      direccion={propiedad.direccion}
+                      motivo={facturaDelMes.errorEnvio}
+                    />
                   )}
                   <div className="flex justify-between">
                     <span className="text-ink-faint">Método guardado</span>
@@ -275,41 +281,78 @@ export default async function PropiedadDetallePage({
               <div className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5.5">
                 <div className="flex items-center justify-between">
                   <p className="text-[14.5px] font-bold">Verificación de identidad</p>
-                  {inquilino.verificacionIdentidad?.estado === "COMPLETADA" ? (
+                  {verificacion?.estado === "COMPLETADA" ? (
                     <span
                       className={`rounded-full px-2.5 py-1 text-xs font-bold ${
-                        inquilino.verificacionIdentidad.rostrosCoinciden
+                        verificacion.rostrosCoinciden
                           ? "bg-success-bg text-success"
-                          : "bg-danger-bg text-danger"
+                          : "bg-warning-bg text-warning"
                       }`}
                     >
-                      {inquilino.verificacionIdentidad.rostrosCoinciden ? "Rostros coinciden" : "No coinciden"}
+                      {verificacion.rostrosCoinciden ? "✓ Verificado" : "Por revisar"}
                     </span>
-                  ) : inquilino.verificacionIdentidad?.estado === "PENDIENTE" ? (
+                  ) : verificacion?.estado === "PENDIENTE" ? (
                     <span className="rounded-full bg-warning-bg px-2.5 py-1 text-xs font-bold text-warning">
                       Pendiente
                     </span>
+                  ) : verificacion?.estado === "EXPIRADA" ? (
+                    <span className="rounded-full bg-danger-bg px-2.5 py-1 text-xs font-bold text-danger">
+                      Vencido
+                    </span>
                   ) : null}
                 </div>
-                <p className="text-[13px] leading-relaxed text-ink-soft">
-                  Envíele un enlace para que confirme su identidad desde el celular: foto de cédula + selfie,
-                  sin descargar nada.
-                </p>
-                {inquilino.verificacionIdentidad?.estado === "COMPLETADA" && (
-                  <Link
-                    href={`/dashboard/verificaciones/${inquilino.verificacionIdentidad.id}`}
-                    className="text-[13px] font-semibold text-accent"
-                  >
-                    Ver fotos y resultado →
-                  </Link>
+
+                {!verificacion && (
+                  <p className="text-[13px] leading-relaxed text-ink-soft">
+                    Este inquilino todavía no tiene enlace de verificación. Se crea solo al registrar a un
+                    inquilino nuevo; a este puede generárselo ahora.
+                  </p>
                 )}
+
+                {verificacion?.estado === "PENDIENTE" && (
+                  <>
+                    <p className="text-[13px] leading-relaxed text-ink-soft">
+                      {verificacion.correoEnviadoEn
+                        ? `Enlace enviado por correo el ${verificacion.correoEnviadoEn.toLocaleDateString("es-CR")}. Esperando a que ${inquilino.nombre.split(" ")[0]} suba su cédula y selfie.`
+                        : `El correo no pudo salir (${verificacion.errorEnvio ?? "sin enviar"}). Comparta el enlace por otro medio, por ejemplo WhatsApp.`}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <BotonCopiarEnlace ruta={`/verificar/${verificacion.token}`} etiqueta="Copiar enlace" />
+                      <a
+                        href={`/verificar/${verificacion.token}?previa=1`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded-[8px] border-[1.5px] border-border bg-surface px-3 py-1.5 text-xs font-semibold text-ink-soft hover:border-primary hover:text-primary"
+                      >
+                        Ver lo que ve el inquilino
+                      </a>
+                    </div>
+                  </>
+                )}
+
+                {verificacion?.estado === "COMPLETADA" && (
+                  <>
+                    <p className="text-[13px] leading-relaxed text-ink-soft">
+                      {verificacion.rostrosCoinciden
+                        ? `${inquilino.nombre.split(" ")[0]} confirmó su identidad el ${verificacion.completadoEn?.toLocaleDateString("es-CR")}.`
+                        : "El sistema no pudo confirmar que las fotos coinciden: revíselas usted mismo."}
+                    </p>
+                    <Link
+                      href={`/dashboard/verificaciones/${verificacion.id}`}
+                      className="text-[13px] font-semibold text-accent"
+                    >
+                      Ver fotos y resultado →
+                    </Link>
+                  </>
+                )}
+
                 <form action={enviarVerificacionIdentidad}>
                   <input type="hidden" name="propiedadId" value={propiedad.id} />
                   <button
                     type="submit"
                     className="w-full rounded-[9px] border-[1.5px] border-border py-2.75 text-center text-[13.5px] font-bold text-ink-soft hover:border-primary hover:text-primary"
                   >
-                    {inquilino.verificacionIdentidad ? "Reenviar enlace" : "Enviar enlace de verificación"}
+                    {verificacion ? "Generar enlace nuevo y reenviar" : "Crear y enviar enlace"}
                   </button>
                 </form>
               </div>

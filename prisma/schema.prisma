@@ -139,7 +139,9 @@ model VerificacionIdentidad {
   textoExtraidoCedula String?
   rostrosCoinciden    Boolean?
   distanciaRostros    Float?
-  enviadoEn           DateTime?
+  enviadoEn           DateTime? // cuándo se creó el enlace
+  correoEnviadoEn     DateTime? // solo se llena si el correo de verdad salió
+  errorEnvio          String? // por qué no salió (p. ej. correo sin configurar)
   completadoEn        DateTime?
   creadoEn            DateTime            @default(now())
 

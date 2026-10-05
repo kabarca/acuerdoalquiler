@@ -11,10 +11,12 @@ export function CapturaForm({
   token,
   nombreInquilino,
   direccionPropiedad,
+  soloVista = false,
 }: {
   token: string;
   nombreInquilino: string;
   direccionPropiedad: string;
+  soloVista?: boolean;
 }) {
   const [paso, setPaso] = useState<Paso>("inicio");
   const [cedulaFile, setCedulaFile] = useState<File | null>(null);
@@ -48,6 +50,10 @@ export function CapturaForm({
 
   async function enviar() {
     if (!cedulaFile || !selfieFile) return;
+    if (soloVista) {
+      setPaso("listo");
+      return;
+    }
     setPaso("enviando");
     setError(null);
 
@@ -71,6 +77,11 @@ export function CapturaForm({
 
   return (
     <div className="overflow-hidden rounded-[18px] border border-border bg-surface shadow-[0_20px_40px_-24px_rgba(16,24,38,0.16)]">
+      {soloVista && (
+        <div className="bg-warning-bg px-8 py-2.5 text-center text-[12.5px] font-bold text-warning">
+          VISTA PREVIA — así lo ve su inquilino. Nada de lo que haga aquí se envía.
+        </div>
+      )}
       <div className="flex flex-col gap-1.5 border-b border-border px-8 py-7">
         <span className="text-[12.5px] font-bold text-ink-faint">VERIFICACIÓN DE IDENTIDAD</span>
         <h1 className="text-[21px] font-semibold">Confirme que es usted</h1>

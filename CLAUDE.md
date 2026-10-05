@@ -198,16 +198,38 @@ funciona para el inquilino, descrito abajo — no hace falta reinventarlo.):
       Rica, no UTC.
 - [x] Un inquilino registrado **después** del día de generación de ese mes empieza a facturarse el mes
       siguiente (el arrendador puede crear la de este mes a mano con el botón "Generar factura").
-- [x] `facturaEnviadaEn` solo se llena cuando Resend confirma el envío (se revisa `resultado.error`,
-      porque el SDK de Resend **no lanza excepción** cuando falla, devuelve `{ error }`). Si falla se
-      guarda `errorEnvio`, la propiedad muestra "No se pudo enviar" y el cron reintenta al día siguiente.
+- [x] **Todo el envío de correos pasa por `intentarEnvio()`** (`lib/resend.ts`). Si `RESEND_API_KEY`
+      está vacía (Thomas dejó Resend para más adelante, 2026-10-05) ni siquiera lo intenta: devuelve
+      "El envío de correos todavía no está configurado" al instante. Si hay llave, revisa
+      `resultado.error` porque el SDK de Resend **no lanza excepción** cuando falla. `facturaEnviadaEn`
+      / `correoEnviadoEn` / `invitacionEnviadaEn` solo se llenan cuando el correo de verdad salió, así
+      que "Enviada el…" ya no miente. Cuando se conecte Resend, empieza a funcionar sin tocar código.
+- [x] **Aviso al arrendador si una factura no se envió** (en la app, no por correo, porque el correo es
+      justo lo que no está disponible): sección "Avisos" arriba del Panel (`dashboard/page.tsx`) y
+      dentro de la propiedad (`components/aviso-factura.tsx`), con "Copiar enlace de pago" (para
+      mandarlo por WhatsApp) y "Ya se la envié" (`marcarFacturaEnviadaManual`). El aviso se calcula
+      del estado real (factura del mes `PENDIENTE`, sin `facturaEnviadaEn`, ya pasó el día de envío),
+      así que aparece aunque el cron no haya corrido. Cuando haya Resend se puede sumar un correo
+      al arrendador, pero no se hizo.
+- [x] Eficiencia del cron: sin llave de correo no hace llamadas de red, y procesa los inquilinos de 10
+      en 10 en paralelo (`maxDuration = 60` en la ruta). Vercel Hobby solo permite cron diario; si
+      alguna vez se necesita reintentar varias veces al día hay que pasar a Pro o llamar la ruta
+      desde un programador externo.
 - [x] La fecha máxima de pago aparece en el correo (recuadro destacado), en el asunto, y en
       `/pagar/[facturaId]`.
-- **Sin probar de punta a punta:** Resend sigue con llave inválida, así que el envío exitoso (y que
-  `facturaEnviadaEn` se llene) no se ha visto funcionar de verdad; sí se probó generación, que no
-  duplica, el cálculo de fechas y el registro del error de envío.
-- **Pendiente relacionado:** `invitarInquilino` y `enviarVerificacionIdentidad` todavía tragan los
-  errores de Resend y muestran "Enviada" aunque no haya salido (mismo problema, no se tocó aquí).
+- [x] **Verificación del inquilino automática al registrarlo**: `crearPropiedadConInquilino` y
+      `crearInquilino` llaman a `crearYEnviarVerificacion()` (`lib/verificacion-inquilino.ts`, el
+      mismo que usa el botón "Generar enlace nuevo y reenviar"). El enlace ahora vence en **7 días**
+      (antes 48 h) porque, sin correo, el arrendador puede tardar en pasárselo. `VerificacionIdentidad`
+      ganó `correoEnviadoEn` y `errorEnvio`. Si el correo no salió, el Panel avisa y la propiedad
+      muestra el enlace para copiar. La propiedad muestra "✓ Verificado" cuando el inquilino terminó
+      y los rostros coincidieron (o "Por revisar" si no), y el Panel avisa por 7 días cuando alguien
+      completa su verificación.
+- [x] `/verificar/[token]?previa=1` es la **vista previa** que ve el arrendador ("Ver lo que ve el
+      inquilino" en la propiedad): recorre las mismas pantallas pero no envía nada.
+- **Sin probar de punta a punta:** el envío exitoso real (falta Resend). Sí se probó: generación sin
+  duplicar, cálculo de fechas, que sin correo se marque "no enviada" con el motivo, los avisos, el
+  botón "Ya se la envié", y el flujo completo de la vista previa.
 
 ## Fuera de alcance (deliberado, no es una pantalla del artifact)
 
