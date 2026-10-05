@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { DatosTransferencia } from "@/components/datos-transferencia";
 import { subirComprobante } from "./actions";
+import { formatearFecha } from "@/lib/facturacion";
 
 function Logo() {
   return (
@@ -120,6 +121,9 @@ export default async function PagarFacturaPage({
             <span className="text-[15.5px] font-semibold">{inquilino.propiedad.direccion}</span>
             <span className="font-heading text-xl font-bold">₡{monto}</span>
           </div>
+          <p className="mt-2 text-[13px] font-semibold text-warning">
+            Fecha máxima de pago: {formatearFecha(factura.fechaVencimiento)}
+          </p>
         </div>
 
         <div className="flex flex-col gap-5.5 px-9 py-8">

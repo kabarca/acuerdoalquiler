@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { crearPropiedadConInquilino } from "../../actions";
 import { IconBuilding, IconUsers, IconCard } from "@/lib/icons";
+import { CamposFacturacion } from "@/components/campos-facturacion";
 
 const inputClass =
   "w-full rounded-[10px] border-[1.5px] border-border bg-surface px-3.5 py-3 text-[15px] outline-none focus:border-primary";
@@ -120,17 +121,14 @@ export default function NuevaPropiedadPage() {
                 className={inputClass}
               />
             </div>
-            <div className="flex flex-1 flex-col gap-1.5">
-              <label className="text-[13px] font-semibold text-ink-soft">Día de vencimiento</label>
-              <select name="diaCobro" className={inputClass} defaultValue="5">
-                <option value="5">Día 5 de cada mes</option>
-                <option value="10">Día 10 de cada mes</option>
-                <option value="15">Día 15 de cada mes</option>
-                <option value="20">Día 20 de cada mes</option>
-                <option value="28">Día 28 de cada mes</option>
-              </select>
-            </div>
           </div>
+          <div className="flex flex-col gap-2">
+            <p className="text-[13px] font-bold">Facturación automática</p>
+            <p className="text-[12.5px] text-ink-faint">
+              Rentia genera y envía la factura al correo del inquilino sola, en las fechas que usted elija.
+            </p>
+          </div>
+          <CamposFacturacion />
           <div className="flex gap-4">
             <div className="flex flex-1 flex-col gap-1.5">
               <label className="text-[13px] font-semibold text-ink-soft">

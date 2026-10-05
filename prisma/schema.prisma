@@ -84,7 +84,15 @@ model Inquilino {
   telefono            String?
   cedula              String? // identifica al inquilino entre arrendadores para la búsqueda de reputación
   montoRenta          Decimal     @db.Decimal(10, 2)
-  diaCobro            Int // día del mes en que se genera la factura (1-28)
+  // Calendario de facturación que fija el arrendador (todos 1-28):
+  // - diaGeneracion: día del mes en que el sistema crea la factura.
+  // - diaEnvio: día del mes en que se le manda por correo al inquilino
+  //   (nunca antes de diaGeneracion).
+  // - diaCobro: fecha máxima de pago. Si es menor que diaEnvio, cae en el
+  //   mes siguiente (ver calcularFechaVencimiento en lib/facturacion.ts).
+  diaGeneracion       Int         @default(1)
+  diaEnvio            Int         @default(1)
+  diaCobro            Int
   fechaInicioContrato DateTime?
   fechaFinContrato    DateTime? // se completa al quitar al inquilino, o null = sigue vigente
   metodoPagoPreferido MetodoPago?
@@ -162,6 +170,11 @@ model Factura {
   comprobanteTipo          String?
   comprobanteNombre        String?
   comprobanteSubidoEn      DateTime?
+  // Envío automático de la factura por correo (ver lib/facturacion.ts). Se
+  // llena solo cuando Resend confirma el envío; si falla queda null y
+  // errorEnvio guarda el motivo — el cron lo reintenta al día siguiente.
+  facturaEnviadaEn         DateTime?
+  errorEnvio               String?
   recordatorioEnviadoEn    DateTime?
   avisoArrendadorEnviadoEn DateTime?
   pagadoEn                 DateTime?

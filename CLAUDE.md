@@ -44,10 +44,12 @@ no las decisiones tomadas antes de esa fecha.
 
 1. El arrendador se registra e inicia sesión.
 2. El arrendador registra una propiedad (dirección, tipo, cantón) y un inquilino para esa propiedad
-   (nombre, correo, teléfono, monto de la renta, día de vencimiento, fechas de contrato) en un solo
-   formulario con indicador de pasos.
-3. Llegada la fecha de cobro, el sistema genera la factura y le manda al inquilino un correo con el
-   detalle y un link de pago (transferencia bancaria, por ahora).
+   (nombre, correo, teléfono, monto de la renta, fechas de contrato) en un solo formulario con
+   indicador de pasos. Ahí mismo programa la facturación con tres fechas (días 1-28 de cada mes):
+   cuándo se **genera** la factura, cuándo se **envía** al inquilino y la **fecha máxima de pago**.
+3. El sistema genera y envía las facturas solo (ver "Facturación automática" abajo): crea la factura el
+   día de generación y la manda por correo el día de envío, con la fecha máxima de pago bien visible
+   y un link de pago (transferencia bancaria, por ahora).
 4. El inquilino paga desde el link, sin necesidad de cuenta.
 5. Si el inquilino no ha pagado después de unos días, el sistema le manda un correo recordatorio.
 6. Si sigue sin pagar después de un periodo mayor (a definir), el sistema le avisa al arrendador por
@@ -179,6 +181,34 @@ funciona para el inquilino, descrito abajo — no hace falta reinventarlo.):
       - `heic-convert` está en `serverExternalPackages` en `next.config.ts` junto con `tesseract.js`,
         por el mismo motivo (carga un WASM en tiempo de ejecución que Turbopack rompe si lo empaqueta).
 
+**Facturación automática** (agregada el 2026-10-05 a pedido de Thomas):
+- [x] Campos en `Inquilino`: `diaGeneracion`, `diaEnvio` (default 1) y `diaCobro` (= fecha máxima de
+      pago, ya existía; antes se llamaba "día de vencimiento"). Se fijan con `CamposFacturacion`
+      (`components/campos-facturacion.tsx`) al registrar o editar al inquilino. El envío nunca queda
+      antes de la generación. Si `diaCobro` < `diaEnvio` la fecha máxima cae en el mes siguiente
+      (`calcularFechaVencimiento` en `lib/facturacion.ts`). `Factura` ganó `facturaEnviadaEn` y
+      `errorEnvio`.
+- [x] `GET /api/cron/facturas` (`app/api/cron/facturas/route.ts`) lo llama Vercel Cron todos los días
+      a las 12:00 UTC = 6:00 a. m. Costa Rica (`vercel.json`). Exige `Authorization: Bearer
+      $CRON_SECRET` (Vercel lo manda solo si `CRON_SECRET` está en las variables del proyecto — **hay
+      que definirlo en Vercel al desplegar**; en `.env` local ya hay uno). Llama a
+      `procesarFacturacionAutomatica()`: crea la factura del mes si ya pasó el día de generación y
+      manda por correo las pendientes cuyo día de envío ya llegó. Compara con `>=` (no `==`), así que
+      es idempotente y si un día falla el cron se recupera solo. "Hoy" se calcula en hora de Costa
+      Rica, no UTC.
+- [x] Un inquilino registrado **después** del día de generación de ese mes empieza a facturarse el mes
+      siguiente (el arrendador puede crear la de este mes a mano con el botón "Generar factura").
+- [x] `facturaEnviadaEn` solo se llena cuando Resend confirma el envío (se revisa `resultado.error`,
+      porque el SDK de Resend **no lanza excepción** cuando falla, devuelve `{ error }`). Si falla se
+      guarda `errorEnvio`, la propiedad muestra "No se pudo enviar" y el cron reintenta al día siguiente.
+- [x] La fecha máxima de pago aparece en el correo (recuadro destacado), en el asunto, y en
+      `/pagar/[facturaId]`.
+- **Sin probar de punta a punta:** Resend sigue con llave inválida, así que el envío exitoso (y que
+  `facturaEnviadaEn` se llene) no se ha visto funcionar de verdad; sí se probó generación, que no
+  duplica, el cálculo de fechas y el registro del error de envío.
+- **Pendiente relacionado:** `invitarInquilino` y `enviarVerificacionIdentidad` todavía tragan los
+  errores de Resend y muestran "Enviada" aunque no haya salido (mismo problema, no se tocó aquí).
+
 ## Fuera de alcance (deliberado, no es una pantalla del artifact)
 
 - Pago automático recurrente con tarjeta guardada (el toggle existe visualmente en `PaymentPage` pero no
@@ -216,7 +246,8 @@ un repositorio y proyecto totalmente separados, sin dependencias entre ambos:
 - **Cobro con tarjeta:** Onvopay (pendiente cuenta real)
 - **Verificación de identidad:** `@vladmandic/face-api` + `@tensorflow/tfjs` (match de rostros, corre
   en el navegador del inquilino) y `tesseract.js` (OCR de la cédula, corre en el servidor)
-- **Programador de tareas:** Vercel Cron (recordatorios diarios) — pendiente de implementar
+- **Programador de tareas:** Vercel Cron — ya corre la facturación automática (`vercel.json`); los
+  recordatorios al inquilino atrasado siguen pendientes de implementar
 - **Hosting:** Vercel (pendiente desplegar)
 
 ## Privacidad y datos

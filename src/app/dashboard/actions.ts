@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getArrendadorActual } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { calcularFechaVencimiento, enteroDia, hoyCostaRica, periodoDe } from "@/lib/facturacion";
 import { enviarInvitacion, enviarVerificacionIdentidad as enviarVerificacionIdentidadEmail } from "@/lib/resend";
 
 function revalidarPanel() {
@@ -23,6 +24,14 @@ function fechaOpcional(formData: FormData, campo: string) {
   return valor ? new Date(valor) : null;
 }
 
+// Calendario de facturación del formulario. El envío nunca puede ser antes
+// de la generación.
+function diasDeFacturacion(formData: FormData) {
+  const diaGeneracion = enteroDia(formData.get("diaGeneracion"), 1);
+  const diaEnvio = Math.max(diaGeneracion, enteroDia(formData.get("diaEnvio"), diaGeneracion));
+  return { diaGeneracion, diaEnvio, diaCobro: enteroDia(formData.get("diaCobro"), 5) };
+}
+
 // Un solo formulario registra la propiedad, el inquilino y las condiciones
 // de pago a la vez — como en la pantalla "Registrar propiedad e inquilino".
 export async function crearPropiedadConInquilino(formData: FormData) {
@@ -35,7 +44,7 @@ export async function crearPropiedadConInquilino(formData: FormData) {
   const email = formData.get("email") as string;
   const telefono = formData.get("telefono") as string;
   const montoRenta = formData.get("montoRenta") as string;
-  const diaCobro = Number(formData.get("diaCobro"));
+  const dias = diasDeFacturacion(formData);
 
   const propiedad = await prisma.propiedad.create({
     data: {
@@ -53,7 +62,7 @@ export async function crearPropiedadConInquilino(formData: FormData) {
       email,
       telefono: telefono || null,
       montoRenta,
-      diaCobro,
+      ...dias,
       fechaInicioContrato: fechaOpcional(formData, "fechaInicioContrato"),
       fechaFinContrato: fechaOpcional(formData, "fechaFinContrato"),
     },
@@ -71,7 +80,7 @@ export async function crearInquilino(formData: FormData) {
   const email = formData.get("email") as string;
   const telefono = formData.get("telefono") as string;
   const montoRenta = formData.get("montoRenta") as string;
-  const diaCobro = Number(formData.get("diaCobro"));
+  const dias = diasDeFacturacion(formData);
 
   await prisma.inquilino.create({
     data: {
@@ -80,7 +89,7 @@ export async function crearInquilino(formData: FormData) {
       email,
       telefono: telefono || null,
       montoRenta,
-      diaCobro,
+      ...dias,
       fechaInicioContrato: fechaOpcional(formData, "fechaInicioContrato"),
       fechaFinContrato: fechaOpcional(formData, "fechaFinContrato"),
     },
@@ -108,7 +117,7 @@ export async function actualizarInquilino(formData: FormData) {
   const email = formData.get("email") as string;
   const telefono = formData.get("telefono") as string;
   const montoRenta = formData.get("montoRenta") as string;
-  const diaCobro = Number(formData.get("diaCobro"));
+  const dias = diasDeFacturacion(formData);
 
   await prisma.inquilino.update({
     where: { id: inquilinoId },
@@ -117,7 +126,7 @@ export async function actualizarInquilino(formData: FormData) {
       email,
       telefono: telefono || null,
       montoRenta,
-      diaCobro,
+      ...dias,
       fechaInicioContrato: fechaOpcional(formData, "fechaInicioContrato"),
       fechaFinContrato: fechaOpcional(formData, "fechaFinContrato"),
     },
@@ -153,9 +162,8 @@ export async function quitarInquilino(formData: FormData) {
   redirect(`/dashboard/propiedades/${propiedadId}`);
 }
 
-// Genera (o regenera) la factura del mes actual para un inquilino, sin
-// esperar al cron. Pensado para probar el flujo completo mientras no
-// existe todavía la generación automática ni la cuenta real de Onvopay.
+// Genera la factura del mes actual a mano, sin esperar al cron diario
+// (ver lib/facturacion.ts). No la envía: el cron la manda el día de envío.
 export async function generarFacturaDePrueba(formData: FormData) {
   await getArrendadorActual();
 
@@ -164,13 +172,9 @@ export async function generarFacturaDePrueba(formData: FormData) {
     where: { id: inquilinoId },
   });
 
-  const ahora = new Date();
-  const periodo = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, "0")}`;
-  const fechaVencimiento = new Date(
-    ahora.getFullYear(),
-    ahora.getMonth(),
-    inquilino.diaCobro,
-  );
+  const { anio, mes } = hoyCostaRica();
+  const periodo = periodoDe(anio, mes);
+  const fechaVencimiento = calcularFechaVencimiento(anio, mes, inquilino.diaEnvio, inquilino.diaCobro);
 
   await prisma.factura.upsert({
     where: { inquilinoId_periodo: { inquilinoId, periodo } },

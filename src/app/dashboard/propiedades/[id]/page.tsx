@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getArrendadorActual } from "@/lib/auth";
+import { CamposFacturacion } from "@/components/campos-facturacion";
 import {
   crearInquilino,
   actualizarInquilino,
@@ -155,9 +156,34 @@ export default async function PropiedadDetallePage({
                     <span className="font-semibold">₡{Number(inquilino.montoRenta).toLocaleString("es-CR")}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-ink-faint">Día de vencimiento</span>
+                    <span className="text-ink-faint">Se genera la factura</span>
+                    <span className="font-semibold">Día {inquilino.diaGeneracion}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-ink-faint">Se envía al inquilino</span>
+                    <span className="font-semibold">Día {inquilino.diaEnvio}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-ink-faint">Fecha máxima de pago</span>
                     <span className="font-semibold">Día {inquilino.diaCobro}</span>
                   </div>
+                  <div className="flex justify-between gap-3">
+                    <span className="shrink-0 text-ink-faint">Factura de este mes</span>
+                    <span className="text-right font-semibold">
+                      {!facturaDelMes
+                        ? "Aún no generada"
+                        : facturaDelMes.facturaEnviadaEn
+                          ? `Enviada el ${facturaDelMes.facturaEnviadaEn.toLocaleDateString("es-CR")}`
+                          : facturaDelMes.errorEnvio
+                            ? "No se pudo enviar"
+                            : `Pendiente de envío (día ${inquilino.diaEnvio})`}
+                    </span>
+                  </div>
+                  {facturaDelMes?.errorEnvio && !facturaDelMes.facturaEnviadaEn && (
+                    <p className="rounded-lg bg-danger-bg px-3 py-2 text-xs text-danger">
+                      El correo no salió ({facturaDelMes.errorEnvio}). Se reintenta solo cada día.
+                    </p>
+                  )}
                   <div className="flex justify-between">
                     <span className="text-ink-faint">Método guardado</span>
                     <span className="font-semibold">
@@ -199,14 +225,11 @@ export default async function PropiedadDetallePage({
                       required
                       className={inputClass}
                     />
-                    <input
-                      name="diaCobro"
-                      type="number"
-                      min={1}
-                      max={28}
-                      defaultValue={inquilino.diaCobro}
-                      required
-                      className={inputClass}
+                    <CamposFacturacion
+                      compacto
+                      diaGeneracion={inquilino.diaGeneracion}
+                      diaEnvio={inquilino.diaEnvio}
+                      diaCobro={inquilino.diaCobro}
                     />
                     <button
                       type="submit"
@@ -343,15 +366,7 @@ export default async function PropiedadDetallePage({
                   required
                   className={inputClass}
                 />
-                <input
-                  name="diaCobro"
-                  type="number"
-                  min={1}
-                  max={28}
-                  placeholder="Día de cobro (1-28)"
-                  required
-                  className={inputClass}
-                />
+                <CamposFacturacion compacto />
                 <button
                   type="submit"
                   className="rounded-[10px] bg-primary py-3 text-sm font-semibold text-white hover:bg-primary-dark"

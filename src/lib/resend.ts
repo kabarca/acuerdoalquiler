@@ -50,12 +50,16 @@ export async function enviarFactura(params: {
   const html = envoltura(`
     <div style="padding:32px;">
       <div style="font-size:13px; color:${INK_FAINT}; font-weight:600;">FACTURA DE ARRIENDO · ${params.periodo.toUpperCase()}</div>
-      <h1 style="font-size:20px; margin:8px 0 6px;">Estimado(a) ${params.nombreInquilino}, tiene un pago pendiente</h1>
+      <h1 style="font-size:20px; margin:8px 0 6px;">Estimado(a) ${params.nombreInquilino}, ya está lista su factura</h1>
       <p style="color:${INK_SOFT}; font-size:14.5px; line-height:1.6;">
-        Su arriendo de <strong>${params.direccionPropiedad}</strong> vence el <strong>${params.fechaVencimiento}</strong>.
-        Puede pagarlo en línea con tarjeta de débito o crédito.
+        Esta es la factura del arriendo de <strong>${params.direccionPropiedad}</strong>. Pague por transferencia
+        bancaria y suba su comprobante desde el enlace de abajo.
       </p>
-      <div style="background:${BG}; border-radius:12px; padding:18px 20px; margin-top:16px;">
+      <div style="background:${WARNING_BG}; border-radius:12px; padding:16px 20px; margin-top:16px;">
+        <div style="font-size:12.5px; font-weight:700; color:${WARNING};">FECHA MÁXIMA DE PAGO</div>
+        <div style="font-size:19px; font-weight:700; margin-top:4px;">${params.fechaVencimiento}</div>
+      </div>
+      <div style="background:${BG}; border-radius:12px; padding:18px 20px; margin-top:12px;">
         <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid ${BORDER}; font-size:14px;">
           <span style="color:${INK_SOFT};">Propiedad</span><span style="font-weight:600;">${params.direccionPropiedad}</span>
         </div>
@@ -64,7 +68,7 @@ export async function enviarFactura(params: {
         </div>
       </div>
       <a href="${params.linkPago}" style="display:block; margin-top:20px; background:${PRIMARY}; color:#fff; border-radius:10px; padding:15px; text-align:center; font-weight:700; font-size:15px; text-decoration:none;">
-        Pagar ahora con tarjeta
+        Ver datos de pago
       </a>
     </div>
     <div style="padding:18px 32px; border-top:1px solid ${BORDER}; color:${INK_FAINT}; font-size:11.5px; text-align:center;">
@@ -75,7 +79,7 @@ export async function enviarFactura(params: {
   return resend.emails.send({
     from: REMITENTE,
     to: params.paraEmail,
-    subject: `Factura de arriendo — ${params.direccionPropiedad}`,
+    subject: `Factura de arriendo — pague antes del ${params.fechaVencimiento}`,
     html,
   });
 }

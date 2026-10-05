@@ -45,8 +45,9 @@ export default async function InvitacionPage({
           </div>
           <h1 className="text-[22px] font-semibold">Método de pago configurado</h1>
           <p className="text-[14.5px] leading-relaxed text-ink-soft">
-            Quedó guardado para {inquilino.propiedad.direccion}. Recibirá la factura de{" "}
-            {inquilino.diaCobro} de cada mes por correo, con el link de pago.
+            Quedó guardado para {inquilino.propiedad.direccion}. Recibirá la factura por
+            correo el día {inquilino.diaEnvio} de cada mes, con el link de pago y su fecha máxima de pago
+            (día {inquilino.diaCobro}).
           </p>
         </div>
       </div>
@@ -64,8 +65,9 @@ export default async function InvitacionPage({
             <h1 className="text-[21px] font-semibold">Configure el pago de su arriendo</h1>
             <p className="text-sm leading-relaxed text-ink-soft">
               Su arrendador le ha invitado a registrar su método de pago para{" "}
-              <strong>{inquilino.propiedad.direccion}</strong> — ₡{monto} mensuales, vence el día{" "}
-              {inquilino.diaCobro}.
+              <strong>{inquilino.propiedad.direccion}</strong> — ₡{monto} mensuales. Le llegará la
+              factura por correo el día {inquilino.diaEnvio} de cada mes y la fecha máxima de pago es el
+              día {inquilino.diaCobro}.
             </p>
           </div>
 
