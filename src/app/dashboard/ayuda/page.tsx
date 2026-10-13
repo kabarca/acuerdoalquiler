@@ -4,7 +4,7 @@ import { linkWhatsAppSoporte } from "@/lib/config";
 export default async function AyudaPage() {
   const arrendador = await getArrendadorActual();
 
-  const mensaje = `Hola, soy ${arrendador.nombre} (${arrendador.email}) y tengo un inconveniente con Rentia:`;
+  const mensaje = `Hola, soy ${arrendador.nombre} (${arrendador.email}) y tengo un inconveniente con Acuerdo Alquiler:`;
 
   return (
     <div className="px-8 py-9">
@@ -23,7 +23,7 @@ export default async function AyudaPage() {
           </svg>
         </div>
         <div className="flex flex-col gap-1.5">
-          <h2 className="text-[17px] font-semibold">Soporte de Rentia</h2>
+          <h2 className="text-[17px] font-semibold">Soporte de Acuerdo Alquiler</h2>
           <p className="text-[14px] leading-relaxed text-ink-soft">
             Cuéntenos qué está pasando y le respondemos directamente por WhatsApp — problemas con
             una factura, un pago, o cualquier duda sobre su cuenta.

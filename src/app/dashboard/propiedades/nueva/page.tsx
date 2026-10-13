@@ -125,7 +125,7 @@ export default function NuevaPropiedadPage() {
           <div className="flex flex-col gap-2">
             <p className="text-[13px] font-bold">Facturación automática</p>
             <p className="text-[12.5px] text-ink-faint">
-              Rentia genera y envía la factura al correo del inquilino sola, en las fechas que usted elija.
+              Acuerdo Alquiler genera y envía la factura al correo del inquilino sola, en las fechas que usted elija.
             </p>
           </div>
           <CamposFacturacion />

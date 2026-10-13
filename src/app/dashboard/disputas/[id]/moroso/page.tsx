@@ -41,7 +41,7 @@ export default async function MarcarMorosoPage({
 
         <div className="mt-4.5 rounded-[10px] bg-danger-bg p-3.5 text-[13px] leading-relaxed font-semibold text-danger">
           Esta acción quedará registrada en el historial de reputación de {primerNombre} y será
-          visible para otros arrendadores en Rentia. No se puede deshacer sin abrir una nueva
+          visible para otros arrendadores en Acuerdo Alquiler. No se puede deshacer sin abrir una nueva
           revisión.
         </div>
 

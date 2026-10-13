@@ -9,7 +9,7 @@ function Logo() {
       <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="3" width="12" height="18" rx="1"/><path d="M16 21v-6h4v6"/></svg>
       </div>
-      <span className="font-heading text-base font-bold">Rentia</span>
+      <span className="font-heading text-base font-bold">Acuerdo Alquiler</span>
     </div>
   );
 }
@@ -100,7 +100,7 @@ export default async function InvitacionPage({
             <label className="flex items-start gap-2.5 rounded-[10px] bg-primary-light p-3.5">
               <input type="checkbox" name="compartirHistorial" className="mt-0.5 h-[18px] w-[18px] shrink-0 accent-primary" />
               <span className="text-[12.5px] leading-relaxed text-primary-dark">
-                Autorizo compartir mi historial de pago con otros arrendadores verificados en Rentia
+                Autorizo compartir mi historial de pago con otros arrendadores verificados en Acuerdo Alquiler
                 (me ayuda a alquilar más fácil en el futuro — puedo retirar mi autorización cuando
                 quiera).
               </span>
@@ -121,7 +121,7 @@ export default async function InvitacionPage({
 
             <div className="flex items-center justify-center gap-2 text-xs text-ink-faint">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>
-              Sus datos están cifrados. Rentia nunca comparte su información con su arrendador sin
+              Sus datos están cifrados. Acuerdo Alquiler nunca comparte su información con su arrendador sin
               su autorización.
             </div>
           </form>

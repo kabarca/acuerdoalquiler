@@ -23,7 +23,7 @@ export default async function ConfiguracionPage() {
     <div className="flex flex-col gap-7 px-11 py-9">
       <div>
         <h1 className="text-2xl font-semibold">Configuración</h1>
-        <p className="mt-1 text-[14.5px] text-ink-soft">Su cuenta y las integraciones de Rentia.</p>
+        <p className="mt-1 text-[14.5px] text-ink-soft">Su cuenta y las integraciones de Acuerdo Alquiler.</p>
       </div>
 
       <div className="max-w-xl rounded-2xl border border-border bg-surface p-6.5">

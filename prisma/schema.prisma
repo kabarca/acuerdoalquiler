@@ -35,7 +35,7 @@ model Arrendador {
   direccionBanco     String?
   direccionTitular   String?
   numeroRuta         String? // routing/ABA — solo aplica a algunos bancos (p. ej. EE. UU.)
-  // true solo para las cuentas del equipo de Rentia — les da acceso a
+  // true solo para las cuentas del equipo de Acuerdo Alquiler — les da acceso a
   // /admin (ver lib/auth.ts). Nunca se ofrece en el registro público.
   esAdmin            Boolean             @default(false)
   creadoEn           DateTime            @default(now())

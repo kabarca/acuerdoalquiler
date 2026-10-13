@@ -56,7 +56,7 @@ body {
   color: var(--ink);
 }
 
-/* ── Transiciones de Rentia ───────────────────────────────────────────── */
+/* ── Transiciones de Acuerdo Alquiler ───────────────────────────────────────────── */
 @keyframes rt-page-in {
   from {
     opacity: 0;

@@ -18,7 +18,7 @@ export default function AuthLayout({
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/15">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="3" width="12" height="18" rx="1"/><path d="M16 21v-6h4v6"/></svg>
           </div>
-          <span className="font-heading text-lg font-bold text-white">Rentia</span>
+          <span className="font-heading text-lg font-bold text-white">Acuerdo Alquiler</span>
         </Link>
 
         <div className="flex flex-col gap-5">
@@ -35,7 +35,7 @@ export default function AuthLayout({
           </div>
         </div>
 
-        <span className="text-[13px] text-primary-light/70">© 2026 Rentia</span>
+        <span className="text-[13px] text-primary-light/70">© 2026 Acuerdo Alquiler</span>
       </div>
 
       <div className="flex flex-1 items-center justify-center px-6 py-16">

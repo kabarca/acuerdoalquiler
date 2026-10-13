@@ -76,7 +76,7 @@ function Logo({ light = false }: { light?: boolean }) {
       <div className={`flex h-8.5 w-8.5 items-center justify-center rounded-[9px] ${light ? "bg-white/15" : "bg-primary"}`}>
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="3" width="12" height="18" rx="1"/><path d="M16 21v-6h4v6"/></svg>
       </div>
-      <span className="font-heading text-xl font-bold tracking-tight">Rentia</span>
+      <span className="font-heading text-xl font-bold tracking-tight">Acuerdo Alquiler</span>
     </div>
   );
 }
@@ -115,7 +115,7 @@ export default function Home() {
               Cobre el arriendo por transferencia, sin contratiempos.
             </h1>
             <p className="max-w-lg text-lg leading-relaxed text-ink-soft">
-              Rentia envía la factura a su inquilino, gestiona el cobro por transferencia
+              Acuerdo Alquiler envía la factura a su inquilino, gestiona el cobro por transferencia
               bancaria, y le notifica automáticamente ante cualquier inconveniente. Usted se
               enfoca en sus propiedades.
             </p>
@@ -224,7 +224,7 @@ export default function Home() {
               <span className="text-[13px] font-bold tracking-wide text-primary uppercase">Precios</span>
               <h2 className="text-4xl font-bold tracking-tight">Simple, sin sorpresas</h2>
               <p className="max-w-lg text-[15px] leading-relaxed text-ink-soft">
-                Usar Rentia no tiene costo.
+                Usar Acuerdo Alquiler no tiene costo.
               </p>
             </div>
 
@@ -289,8 +289,8 @@ export default function Home() {
 
       <footer className="border-t border-border px-8 py-8 sm:px-16">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <span className="font-heading text-base font-bold">Rentia</span>
-          <span className="text-[13px] text-ink-faint">© 2026 Rentia</span>
+          <span className="font-heading text-base font-bold">Acuerdo Alquiler</span>
+          <span className="text-[13px] text-ink-faint">© 2026 Acuerdo Alquiler</span>
         </div>
       </footer>
     </div>

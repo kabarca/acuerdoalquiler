@@ -6,7 +6,7 @@ import { Resend } from "resend";
 // hasta que se configure RESEND_API_KEY de verdad.
 export const resend = new Resend(process.env.RESEND_API_KEY || "re_sin_configurar");
 
-const REMITENTE = process.env.RESEND_FROM_EMAIL ?? "cobros@ejemplo.com";
+const REMITENTE = process.env.RESEND_FROM_EMAIL ?? "cobros@acuerdoalquiler.com";
 
 // Hasta que Thomas conecte Resend de verdad, RESEND_API_KEY queda vacía y
 // ningún correo sale. Todo el código que manda correos pasa por
@@ -34,7 +34,7 @@ export async function intentarEnvio(
   }
 }
 
-// Paleta de marca de Rentia, en variables ya resueltas (los clientes de
+// Paleta de marca de Acuerdo Alquiler, en variables ya resueltas (los clientes de
 // correo no soportan `var(--token)`).
 const INK = "#101826";
 const INK_SOFT = "#55637a";
@@ -54,9 +54,9 @@ function envoltura(contenido: string) {
       <div style="max-width:500px; margin:0 auto; background:${SURFACE}; border-radius:16px; border:1px solid ${BORDER}; overflow:hidden;">
         <div style="padding:22px 32px; border-bottom:1px solid ${BORDER}; display:flex; align-items:center; gap:10px;">
           <div style="width:26px; height:26px; border-radius:7px; background:${PRIMARY}; display:inline-block; text-align:center; line-height:26px;">
-            <span style="color:#fff; font-weight:700; font-size:13px;">R</span>
+            <span style="color:#fff; font-weight:700; font-size:13px;">A</span>
           </div>
-          <span style="font-weight:700; font-size:15px; vertical-align:middle;">Rentia</span>
+          <span style="font-weight:700; font-size:15px; vertical-align:middle;">Acuerdo Alquiler</span>
         </div>
         ${contenido}
       </div>
@@ -98,7 +98,7 @@ export async function enviarFactura(params: {
       </a>
     </div>
     <div style="padding:18px 32px; border-top:1px solid ${BORDER}; color:${INK_FAINT}; font-size:11.5px; text-align:center;">
-      Este correo fue enviado por Rentia en nombre de su arrendador.
+      Este correo fue enviado por Acuerdo Alquiler en nombre de su arrendador.
     </div>
   `);
 

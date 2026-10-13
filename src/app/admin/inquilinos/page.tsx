@@ -20,7 +20,7 @@ export default async function AdminInquilinosPage() {
       <div className="mt-3 flex flex-col gap-1.5">
         <h1 className="text-[24px] font-semibold">Inquilinos</h1>
         <p className="text-[14.5px] text-ink-soft">
-          {inquilinos.length} {inquilinos.length === 1 ? "inquilino registrado" : "inquilinos registrados"} en Rentia (incluye históricos).
+          {inquilinos.length} {inquilinos.length === 1 ? "inquilino registrado" : "inquilinos registrados"} en Acuerdo Alquiler (incluye históricos).
         </p>
       </div>
 

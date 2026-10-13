@@ -1,4 +1,4 @@
-// Iconos SVG reutilizados en el panel, extraídos del diseño de Rentia.
+// Iconos SVG reutilizados en el panel, extraídos del diseño de Acuerdo Alquiler.
 
 export function IconGrid(props: { className?: string }) {
   return (

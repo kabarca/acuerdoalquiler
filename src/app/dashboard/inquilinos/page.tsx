@@ -105,7 +105,7 @@ export default async function BuscarInquilinoPage({
                   <p className="text-[15.5px] font-bold">{r.nombre}</p>
                   <p className="mt-0.5 text-[13px] text-ink-faint">
                     Cédula {enmascarar(r.cedula)} · {r.alquileres}{" "}
-                    {r.alquileres === 1 ? "alquiler registrado" : "alquileres registrados"} en Rentia
+                    {r.alquileres === 1 ? "alquiler registrado" : "alquileres registrados"} en Acuerdo Alquiler
                   </p>
                 </div>
                 {r.estado === "disputa" ? (
@@ -140,7 +140,7 @@ export default async function BuscarInquilinoPage({
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9.5"/><line x1="12" y1="8" x2="12" y2="8.1"/><line x1="12" y1="11" x2="12" y2="16"/></svg>
         </div>
         <p className="text-[13.5px] text-ink-soft">
-          Los resultados muestran solo inquilinos que autorizaron compartir su historial en Rentia.
+          Los resultados muestran solo inquilinos que autorizaron compartir su historial en Acuerdo Alquiler.
         </p>
       </div>
     </div>

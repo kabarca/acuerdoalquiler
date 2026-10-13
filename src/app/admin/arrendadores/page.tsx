@@ -16,7 +16,7 @@ export default async function AdminArrendadoresPage() {
       <div className="mt-3 flex flex-col gap-1.5">
         <h1 className="text-[24px] font-semibold">Arrendadores</h1>
         <p className="text-[14.5px] text-ink-soft">
-          {arrendadores.length} {arrendadores.length === 1 ? "cuenta registrada" : "cuentas registradas"} en Rentia.
+          {arrendadores.length} {arrendadores.length === 1 ? "cuenta registrada" : "cuentas registradas"} en Acuerdo Alquiler.
         </p>
       </div>
 

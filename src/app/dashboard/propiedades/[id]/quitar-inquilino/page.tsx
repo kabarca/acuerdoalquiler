@@ -38,7 +38,7 @@ export default async function QuitarInquilinoPage({
           <h1 className="text-[19px] font-semibold">Antes de continuar, cuéntenos por qué</h1>
           <p className="text-[13.5px] leading-relaxed text-ink-soft">
             <strong>{inquilino.nombre}</strong> dejará de ser inquilino de{" "}
-            <strong>{propiedad.direccion}</strong>. Su respuesta nos ayuda a mejorar Rentia.
+            <strong>{propiedad.direccion}</strong>. Su respuesta nos ayuda a mejorar Acuerdo Alquiler.
           </p>
         </div>
 
@@ -79,7 +79,7 @@ export default async function QuitarInquilinoPage({
 
           <p className="text-xs leading-relaxed text-ink-faint">
             Esta información no se comparte con {inquilino.nombre.split(" ")[0]} ni afecta su
-            reputación en Rentia.
+            reputación en Acuerdo Alquiler.
           </p>
 
           <div className="flex gap-3">

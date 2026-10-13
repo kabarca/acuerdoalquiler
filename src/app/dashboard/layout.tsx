@@ -27,7 +27,7 @@ export default async function DashboardLayout({
           <div className="flex h-[30px] w-[30px] items-center justify-center rounded-lg bg-white/15">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="3" width="12" height="18" rx="1"/><path d="M16 21v-6h4v6"/></svg>
           </div>
-          <span className="font-heading text-[17px] font-bold text-white">Rentia</span>
+          <span className="font-heading text-[17px] font-bold text-white">Acuerdo Alquiler</span>
         </Link>
 
         <nav className="flex flex-col gap-1">

@@ -184,7 +184,7 @@ export default async function DisputaPage({
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12.5"/><line x1="12" y1="15.5" x2="12" y2="15.6"/></svg>
                 <span className="text-[14.5px] font-bold text-danger">Marcar como moroso(a)</span>
                 <span className="text-[12.5px] leading-relaxed text-ink-faint">
-                  Afecta la reputación de {primerNombre} en Rentia. Deberá explicar el motivo.
+                  Afecta la reputación de {primerNombre} en Acuerdo Alquiler. Deberá explicar el motivo.
                 </span>
               </Link>
             </div>

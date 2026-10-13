@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { login } from "./actions";
 
-/** Pantalla de transición al entrar — logo de Rentia + barra de progreso. */
+/** Pantalla de transición al entrar — logo de Acuerdo Alquiler + barra de progreso. */
 function TransicionEntrada() {
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center bg-bg animate-[rt-fade-in_200ms_ease-out] motion-reduce:animate-none">
@@ -16,7 +16,7 @@ function TransicionEntrada() {
               <path d="M16 21v-6h4v6" />
             </svg>
           </div>
-          <span className="font-heading text-2xl font-bold text-ink">Rentia</span>
+          <span className="font-heading text-2xl font-bold text-ink">Acuerdo Alquiler</span>
         </div>
         <div className="h-[3px] w-36 overflow-hidden rounded-full bg-border">
           <div className="h-full w-full origin-left rounded-full bg-primary animate-[rt-progress_700ms_cubic-bezier(0.35,0,0.1,1)_120ms_forwards] motion-reduce:animate-none" />

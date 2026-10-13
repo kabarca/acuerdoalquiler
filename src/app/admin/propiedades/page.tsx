@@ -25,7 +25,7 @@ export default async function AdminPropiedadesPage() {
       <div className="mt-3 flex flex-col gap-1.5">
         <h1 className="text-[24px] font-semibold">Propiedades</h1>
         <p className="text-[14.5px] text-ink-soft">
-          {propiedades.length} {propiedades.length === 1 ? "propiedad registrada" : "propiedades registradas"} en Rentia.
+          {propiedades.length} {propiedades.length === 1 ? "propiedad registrada" : "propiedades registradas"} en Acuerdo Alquiler.
         </p>
       </div>
 

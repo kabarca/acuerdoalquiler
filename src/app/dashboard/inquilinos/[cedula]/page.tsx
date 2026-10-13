@@ -119,7 +119,7 @@ export default async function PerfilInquilinoPage({
 
           <p className="px-1 text-[12.5px] leading-relaxed text-ink-faint">
             {nombre.split(" ")[0]} autorizó compartir su historial de pago con arrendadores
-            verificados en Rentia.
+            verificados en Acuerdo Alquiler.
           </p>
         </div>
 
@@ -136,7 +136,7 @@ export default async function PerfilInquilinoPage({
                     <div>
                       <p className="text-[15px] font-bold">{f.propiedad.direccion}</p>
                       <p className="mt-0.5 text-[13px] text-ink-faint">
-                        {rango(f.fechaInicioContrato, f.fechaFinContrato, false)} · Arrendador verificado en Rentia
+                        {rango(f.fechaInicioContrato, f.fechaFinContrato, false)} · Arrendador verificado en Acuerdo Alquiler
                       </p>
                     </div>
                     <span className="rounded-full bg-success-bg px-2.5 py-1 text-xs font-bold text-success">

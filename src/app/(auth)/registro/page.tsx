@@ -103,7 +103,7 @@ export default async function RegistroPage({
           <input type="checkbox" required className="mt-1 h-[18px] w-[18px] shrink-0 rounded-[5px] border-[1.5px] border-border accent-primary" />
           <span className="text-[13px] leading-relaxed text-ink-soft">
             Acepto los <span className="font-semibold text-accent">Términos de servicio</span> y la{" "}
-            <span className="font-semibold text-accent">Política de privacidad</span> de Rentia.
+            <span className="font-semibold text-accent">Política de privacidad</span> de Acuerdo Alquiler.
           </span>
         </label>
 

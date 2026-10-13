@@ -15,7 +15,7 @@ const publicSans = Public_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Rentia",
+  title: "Acuerdo Alquiler",
   description: "Cobro de arriendo por transferencia bancaria para arrendadores en Costa Rica",
 };
 

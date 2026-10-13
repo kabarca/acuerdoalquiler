@@ -25,7 +25,7 @@ export default async function AdminLayout({
           <div className="flex h-[30px] w-[30px] items-center justify-center rounded-lg bg-primary-dark">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="3" width="12" height="18" rx="1"/><path d="M16 21v-6h4v6"/></svg>
           </div>
-          <span className="font-heading text-[15px] font-bold">Rentia</span>
+          <span className="font-heading text-[15px] font-bold">Acuerdo Alquiler</span>
           <span className="rounded-full bg-primary-light px-2.5 py-1 text-[11px] font-bold text-primary uppercase">
             Admin
           </span>

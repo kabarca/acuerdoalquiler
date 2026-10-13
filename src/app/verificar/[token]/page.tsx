@@ -7,7 +7,7 @@ function Logo() {
       <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="3" width="12" height="18" rx="1"/><path d="M16 21v-6h4v6"/></svg>
       </div>
-      <span className="font-heading text-base font-bold">Rentia</span>
+      <span className="font-heading text-base font-bold">Acuerdo Alquiler</span>
     </div>
   );
 }

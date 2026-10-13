@@ -1,4 +1,4 @@
-# Rentia — cobro de arriendo con tarjeta
+# Acuerdo Alquiler — cobro de arriendo con tarjeta
 
 ## Qué es este proyecto
 
@@ -7,7 +7,7 @@ sin que el inquilino tenga que ir al banco a hacer una gestión presencial. El a
 propiedad y su inquilino una sola vez; el sistema se encarga de mandar la factura, el link de pago,
 recordar si no han pagado, y avisarle al arrendador si el inquilino se atrasa demasiado.
 
-**Método de pago (2026-09-16):** por ahora Rentia solo ofrece pago por **transferencia bancaria**
+**Método de pago (2026-09-16):** por ahora Acuerdo Alquiler solo ofrece pago por **transferencia bancaria**
 (el inquilino transfiere y sube comprobante, el arrendador lo confirma). El cobro con tarjeta vía
 Onvopay sigue siendo el plan a futuro (ver sección Onvopay más abajo), pero está pausado — no se
 muestra como opción en ninguna pantalla mientras tanto. Si se reactiva, hay que revisar
@@ -15,24 +15,90 @@ muestra como opción en ninguna pantalla mientras tanto. Si se reactiva, hay que
 transferencia (el modelo de datos — enum `MetodoPago`, campos de Onvopay en `Factura` — se dejó
 intacto para no tener que rehacerlo).
 
-**Nombre del producto: Rentia.**
+**Nombre del producto: Acuerdo Alquiler.** (Hasta el 2026-10-13 el nombre visible en la app era
+"Rentia" — Kevin pidió el cambio ese día porque ya existe el sitio y el dominio
+[acuerdoalquiler.com](https://acuerdoalquiler.com). Se reemplazó "Rentia" por "Acuerdo Alquiler" en
+todo el código visible al usuario — UI, correos, metadata — y en el dominio de correo por defecto de
+`src/lib/resend.ts`/`.env.example`. Si queda algún "Rentia" suelto en pantalla, es un resto de ese
+cambio, no una decisión deliberada.)
+
+## Visión de producto: por qué existe esto
+
+Esto no es un simple cobrador de alquileres — es la razón de ser del producto, y debe guiar cualquier
+decisión de producto o de diseño:
+
+- **Quién invita a quién.** El arrendador (dueño de la propiedad) es quien tiene cuenta y quien
+  **invita** a su inquilino a la plataforma — el inquilino nunca se registra por su cuenta (ver
+  `invitarInquilino` y `/invitacion/[id]`, ya construidos).
+- **Fuente única de verdad de las notificaciones.** Todo el ida-y-vuelta entre arrendador e inquilino
+  —factura generada, "su pago vence en 5 días", "su pago vence en 3 días", aviso de atraso, confirmación
+  de pago recibido— debe vivir y quedar registrado en Acuerdo Alquiler, no dispersarse en WhatsApp o
+  correos sueltos. Esto ya existe parcialmente (`lib/resend.ts`, recordatorios, avisos); cualquier nuevo
+  tipo de notificación (recordatorios a 5/3 días antes del vencimiento, por ejemplo) debe seguir el mismo
+  patrón y quedar visible en el panel, no solo mandarse por correo.
+- **La razón real de ser del producto: una lista negra de inquilinos morosos.** En Costa Rica hoy no
+  existe ninguna forma de que un arrendador sepa, antes de alquilarle a alguien, si esa persona ha
+  dejado de pagar en alquileres anteriores. Un inquilino puede alquilar un lugar, dejar de pagar durante
+  cinco meses, mudarse a otra propiedad y repetir el patrón indefinidamente sin ninguna consecuencia.
+  Acuerdo Alquiler existe para romper eso: construir un **registro histórico de comportamiento de pago
+  por cédula**, consultable por cualquier arrendador antes de aceptar a un inquilino. Esto ya tiene una
+  base construida — ver "Disputas y reputación" más abajo (`TenantProfile`, `TenantSearch`,
+  `MarkDelinquent`, el campo `compartirHistorial`) — pero es el **diferenciador central**, no una
+  función secundaria. Cualquier decisión de producto debería preguntarse: ¿esto fortalece la calidad y
+  cobertura de ese registro?
+- **Por qué es gratis por ahora.** El servicio no cobra (ver "Decisiones pendientes de Thomas") porque
+  la prioridad actual es **masa crítica de arrendadores e inquilinos** — el registro de morosidad solo
+  tiene valor disuasivo y de consulta si cubre suficiente mercado. Monetizar antes de tener esa cobertura
+  sería sacrificar la razón de ser del producto por ingresos tempranos.
+
+## Tono y posicionamiento de marca
+
+Dado lo anterior, Acuerdo Alquiler necesita sentirse como una **entidad reguladora o un banco**, no como
+una startup. Esto aplica a copy, color, tipografía y layout del **sitio público** (ver guía de estilo
+abajo):
+
+- **Serio, no simpático.** Nada de emojis, nada de tono "amigable de SaaS". El lenguaje debe sonar a
+  entidad de registro/crédito: preciso, formal, con el peso de "esto queda anotado".
+- **Cuadrado, no redondeado.** Esquinas rectas o casi rectas (radios mínimos, 0–3px), bordes finos y
+  deliberados, sin sombras suaves de tarjeta flotante — layout de retícula, no de app consumer.
+  Referencia visual: `jpmorgan.com/commercial-real-estate` (ver guía de estilo).
+  **Fuente obligatoria: Fira Sans** (`fonts.google.com/specimen/Fira+Sans`), en todas sus variantes de
+  peso — reemplaza a Space Grotesk/Public Sans en el sitio público.
+- **"Fuente de verdad", no "app bonita".** El vocabulario y los componentes deben reforzar la idea de
+  un registro oficial: notas al pie regulatorias, lenguaje de consentimiento explícito en formularios
+  (igual que ya existe en `/invitacion/[id]` con `compartirHistorial`), fechas y cédulas visibles, nunca
+  iconografía juguetona.
+- Esto **no aplica al dashboard interno** (`/dashboard`, `/admin`), que sigue con el lenguaje visual
+  actual — ver guía de estilo para el alcance exacto.
 
 ## Diseño: fuente de verdad
 
-El diseño completo (24 pantallas) vive en un artifact de Claude Design que Thomas construyó:
-`https://claude.ai/artifact/34GUb3jZQBheak8fFXBXmk`. El **17 de septiembre de 2026 se reconstruyó
-toda la aplicación desde cero para igualar ese diseño** — cualquier trabajo previo (paleta genérica
-azul, nombre "Cobro de renta") quedó descartado. Ante cualquier duda de diseño, ese artifact manda,
-no las decisiones tomadas antes de esa fecha.
+**Dos sistemas de diseño separados, según el alcance (ver "Tono y posicionamiento de marca" arriba):**
 
-**Paleta y tipografía (tomadas literalmente del artifact):**
-- Fuentes: `Space Grotesk` (encabezados) + `Public Sans` (texto), vía `next/font/google`.
-- Colores (variables CSS en `globals.css`): `--ink #101826`, `--ink-soft #55637a`,
-  `--ink-faint #8895a7`, `--bg #f5f8fb`, `--surface #fff`, `--border #e3e8f0`,
-  `--primary #1f4e8c`, `--primary-dark #143a6b`, `--primary-light #eaf1fb`, `--accent #2f6fed`,
-  `--success #157a4d`/`--success-bg #e7f6ee`, `--warning #a8660f`/`--warning-bg #fdf1de`,
-  `--danger #b93a2b`/`--danger-bg #fbe9e6`.
-- Sidebar del panel: fondo `--primary-dark`, texto claro, ítem activo con fondo `white/10`.
+1. **Panel autenticado** (`/dashboard`, `/admin`): el diseño completo (24 pantallas) vive en un
+   artifact de Claude Design que Thomas construyó: `https://claude.ai/artifact/34GUb3jZQBheak8fFXBXmk`.
+   El **17 de septiembre de 2026 se reconstruyó toda la aplicación desde cero para igualar ese
+   diseño** — cualquier trabajo previo (paleta genérica azul, nombre "Cobro de renta") quedó
+   descartado. Ante cualquier duda de diseño del panel, ese artifact manda.
+
+   **Paleta y tipografía del panel (tomadas literalmente del artifact):**
+   - Fuentes: `Space Grotesk` (encabezados) + `Public Sans` (texto), vía `next/font/google`.
+   - Colores (variables CSS en `globals.css`): `--ink #101826`, `--ink-soft #55637a`,
+     `--ink-faint #8895a7`, `--bg #f5f8fb`, `--surface #fff`, `--border #e3e8f0`,
+     `--primary #1f4e8c`, `--primary-dark #143a6b`, `--primary-light #eaf1fb`, `--accent #2f6fed`,
+     `--success #157a4d`/`--success-bg #e7f6ee`, `--warning #a8660f`/`--warning-bg #fdf1de`,
+     `--danger #b93a2b`/`--danger-bg #fbe9e6`.
+   - Sidebar del panel: fondo `--primary-dark`, texto claro, ítem activo con fondo `white/10`.
+
+2. **Sitio público** (`src/app/(marketing)`, `src/app/(auth)` — visitante sin sesión): guía de estilo
+   separada, construida el 2026-10-13 a pedido de Kevin, con el lenguaje visual de
+   `jpmorgan.com/commercial-real-estate` (colores y componentes medidos del DOM real) pero con
+   **Fira Sans** como tipografía en vez de la fuente propietaria de JPMorgan:
+   `https://claude.ai/artifact/3EQNGHp5ZKHsL34y1zDVms` (3 artboards: Fundamentos, Componentes A,
+   Componentes B). Tokens clave: `--ink #101820`, `--chrome #31373D`, `--primary #1A7B99`,
+   `--primary-light #2B9AB3`, `--accent #AF8462` (gold), radios casi nulos (3px botones, 0px
+   tarjetas), sin sombras. Aún no implementada en código — el `globals.css` actual sigue usando los
+   tokens del panel también en `(marketing)`/`(auth)`, pendiente de migrar.
 
 ## Quién usa el sistema
 
@@ -106,11 +172,11 @@ Pagos y reportes:
       botón "Imprimir / Guardar como PDF" — no genera un PDF binario, usa el diálogo de impresión del navegador)
 
 Soporte y administración (no forman parte del artifact, agregadas el 2026-09-16 a pedido de Thomas):
-- [x] `/dashboard/ayuda`: sección para que el arrendador contacte al soporte de Rentia por WhatsApp
+- [x] `/dashboard/ayuda`: sección para que el arrendador contacte al soporte de Acuerdo Alquiler por WhatsApp
       (link `wa.me` con mensaje prellenado). El número vive en `src/lib/config.ts`
       (`SOPORTE_WHATSAPP_NUMERO`) — **hoy es un número de relleno (`50600000000`), falta que Thomas
       dé el número real de soporte.**
-- [x] `/admin`: panel interno solo para el equipo de Rentia (no para arrendadores) — muestra el total
+- [x] `/admin`: panel interno solo para el equipo de Acuerdo Alquiler (no para arrendadores) — muestra el total
       de arrendadores, propiedades e inquilinos activos. Protegido por el campo `esAdmin` en
       `Arrendador` (`false` por defecto, nunca se ofrece en el registro público) vía
       `getAdminActual()` en `lib/auth.ts`; `proxy.ts`/`middleware.ts` también exige sesión para

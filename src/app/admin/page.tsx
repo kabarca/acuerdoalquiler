@@ -43,7 +43,7 @@ export default async function AdminPage() {
       <div className="flex flex-col gap-1.5">
         <h1 className="text-[26px] font-semibold">Panel de administración</h1>
         <p className="text-[15px] text-ink-soft">
-          Vista interna de Rentia — no visible para arrendadores. Haga clic en una tarjeta para ver
+          Vista interna de Acuerdo Alquiler — no visible para arrendadores. Haga clic en una tarjeta para ver
           el detalle.
         </p>
       </div>
