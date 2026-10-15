@@ -34,7 +34,7 @@ export default async function AdminInquilinosPage() {
                 <th className="px-4.5 py-3">Nombre</th>
                 <th className="px-4.5 py-3">Propiedad</th>
                 <th className="px-4.5 py-3">Arrendador</th>
-                <th className="px-4.5 py-3">Renta</th>
+                <th className="px-4.5 py-3">Alquiler</th>
                 <th className="px-4.5 py-3">Estado</th>
               </tr>
             </thead>

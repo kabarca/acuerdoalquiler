@@ -1,26 +1,21 @@
-# Acuerdo Alquiler — cobro de arriendo con tarjeta
+# Acuerdo Alquiler — Recordatorio y cobro de arriendo con métodos de pago
 
 ## Qué es este proyecto
 
-Un sistema para que arrendadores en Costa Rica puedan cobrarle el arriendo a sus inquilinos en línea,
-sin que el inquilino tenga que ir al banco a hacer una gestión presencial. El arrendador registra su
+Un sistema para que arrendadores en Costa Rica puedan enviar notificaciones de cobro, recordatorios
+y eventualmente cobrarle el arriendo a sus inquilinos con un link de pago, entre otros.
+El arrendador registra su
 propiedad y su inquilino una sola vez; el sistema se encarga de mandar la factura, el link de pago,
 recordar si no han pagado, y avisarle al arrendador si el inquilino se atrasa demasiado.
 
 **Método de pago (2026-09-16):** por ahora Acuerdo Alquiler solo ofrece pago por **transferencia bancaria**
 (el inquilino transfiere y sube comprobante, el arrendador lo confirma). El cobro con tarjeta vía
-Onvopay sigue siendo el plan a futuro (ver sección Onvopay más abajo), pero está pausado — no se
-muestra como opción en ninguna pantalla mientras tanto. Si se reactiva, hay que revisar
+Onvopay sigue siendo el plan a futuro (ver sección Onvopay más abajo), pero está pausado. Si se reactiva, hay que revisar
 `pagar/[facturaId]/page.tsx` e `invitacion/[id]/page.tsx`, que se simplificaron para mostrar solo
 transferencia (el modelo de datos — enum `MetodoPago`, campos de Onvopay en `Factura` — se dejó
 intacto para no tener que rehacerlo).
 
-**Nombre del producto: Acuerdo Alquiler.** (Hasta el 2026-10-13 el nombre visible en la app era
-"Rentia" — Kevin pidió el cambio ese día porque ya existe el sitio y el dominio
-[acuerdoalquiler.com](https://acuerdoalquiler.com). Se reemplazó "Rentia" por "Acuerdo Alquiler" en
-todo el código visible al usuario — UI, correos, metadata — y en el dominio de correo por defecto de
-`src/lib/resend.ts`/`.env.example`. Si queda algún "Rentia" suelto en pantalla, es un resto de ese
-cambio, no una decisión deliberada.)
+**Nombre del producto: Acuerdo Alquiler.** [acuerdoalquiler.com](https://acuerdoalquiler.com). 
 
 ## Visión de producto: por qué existe esto
 
@@ -71,6 +66,54 @@ abajo):
 - Esto **no aplica al dashboard interno** (`/dashboard`, `/admin`), que sigue con el lenguaje visual
   actual — ver guía de estilo para el alcance exacto.
 
+### Tono de voz en español (agregado 2026-10-16)
+
+Kevin marcó el 2026-10-16 que el copy del sitio público sonaba "boty y salesy" — típico de landing
+page de SaaS, no de una entidad seria. Se analizaron dos referencias reales antes de decidir:
+
+- **`baccredomatic.com/es-cr` (descartada como modelo):** su copy de cara al consumidor usa voseo
+  informal todo el tiempo ("Elegí", "Acumulá", "¡Contáctanos desde donde estés!") con signos de
+  exclamación frecuentes — es un banco vendiendo tarjetas y promociones, no una entidad de registro.
+  Ese tono encajaría peor con Acuerdo Alquiler, no mejor.
+- **`equifax.co.cr` (la referencia real):** un buró de crédito — el mismo tipo de negocio que
+  Acuerdo Alquiler (un registro consultable de comportamiento de pago), no un banco. Su copy:
+  - **Cero signos de exclamación** en todo el sitio (hero, producto, empresas).
+  - **Explica causa y efecto en vez de prometer beneficios:** "Conocer este detalle es vital para
+    entender cómo te ven los bancos y entidades financieras." / "Dado que las entidades financieras
+    revisan tu historial crediticio para definir si calificas para un préstamo, es importante que
+    cuides tu comportamiento crediticio." — nunca "¡mejora tu vida financiera!", siempre "esto pasa,
+    por eso importa".
+  - **Vocabulario preciso de buró de crédito**, no genérico: "comportamiento crediticio", "historial
+    crediticio", "información positiva/negativa", "deudas vencidas/sin vencer", "score de riesgo",
+    "probabilidad de pago". Acuerdo Alquiler tiene su propio vocabulario equivalente — usarlo
+    siempre, no inventar sinónimos marketineros: **"historial de pago"**, **"comportamiento de
+    pago"**, **"registro de morosidad"**, **"reporte"**, **"disputa"** (ya existen como términos del
+    producto, ver `Visión de producto` arriba y el modelo `Disputa`/`TenantProfile`).
+  - **Viñetas utilitarias, no aspiracionales:** "Evita sorpresas de deudas fantasma", "Ordena tus
+    finanzas estando al día" — suena a aviso de servicio público, no a copy de ventas.
+  - **Botones y CTAs puramente transaccionales:** "Compra Aquí", "Obtener Aquí", "Ir a Cobranza" —
+    el verbo más corto posible, sin adjetivo ni urgencia fabricada.
+  - Nota: Equifax mezcla tú/usted/vos de forma inconsistente entre páginas (probablemente copy
+    traducido sin pasar por una edición unificada) — **no** es un modelo a seguir en la persona
+    gramatical. Acuerdo Alquiler mantiene **usted** en todo el sitio público, que ya estaba decidido
+    y es consistente.
+
+**Reglas concretas para todo el copy del sitio público** (y para cualquier copy nuevo que se
+escriba después):
+1. **Nunca usar signos de exclamación.**
+2. **Nunca prometer una sensación o un tiempo** ("sin contratiempos", "sin complicaciones", "en
+   menos de 5 minutos", "empiece ahora") — decir qué pasa y, cuando aplique, por qué importa. Mal:
+   "Cobre el arriendo sin contratiempos." Bien: "Registre el cobro de alquiler y el historial de
+   pago de su inquilino."
+3. **Usted en todo el sitio público**, sin excepción — ni una etiqueta aislada en tú ("Agrega la
+   propiedad" es un error, debe ser "Agregue la propiedad").
+4. **"Alquiler"/"alquilar", nunca "renta"/"rentar"** — así se dice en Costa Rica. Excepción real:
+   "declaración de renta" es el término correcto de Hacienda para el impuesto sobre la renta (ver
+   `dashboard/pagos/certificado`) — ese "renta" específico no se toca, no es sinónimo del alquiler.
+5. **Nada de frases de arranque de SaaS** ("Empiece ahora", "Simple, sin sorpresas", "todo en un
+   solo lugar") — reemplazar por la descripción literal de qué hace el producto o qué dice el
+   registro.
+
 ## Diseño: fuente de verdad
 
 **Dos sistemas de diseño separados, según el alcance (ver "Tono y posicionamiento de marca" arriba):**
@@ -94,11 +137,49 @@ abajo):
    separada, construida el 2026-10-13 a pedido de Kevin, con el lenguaje visual de
    `jpmorgan.com/commercial-real-estate` (colores y componentes medidos del DOM real) pero con
    **Fira Sans** como tipografía en vez de la fuente propietaria de JPMorgan:
-   `https://claude.ai/artifact/3EQNGHp5ZKHsL34y1zDVms` (3 artboards: Fundamentos, Componentes A,
-   Componentes B). Tokens clave: `--ink #101820`, `--chrome #31373D`, `--primary #1A7B99`,
+   `https://claude.ai/artifact/3EQNGHp5ZKHsL34y1zDVms` (4 artboards: Fundamentos, Componentes A,
+   Componentes B, Imágenes). Tokens clave: `--ink #101820`, `--chrome #31373D`, `--primary #1A7B99`,
    `--primary-light #2B9AB3`, `--accent #AF8462` (gold), radios casi nulos (3px botones, 0px
-   tarjetas), sin sombras. Aún no implementada en código — el `globals.css` actual sigue usando los
-   tokens del panel también en `(marketing)`/`(auth)`, pendiente de migrar.
+   tarjetas), sin sombras.
+
+   **Implementada en código el 2026-10-15.** Tokens nuevos en `globals.css` bajo su propio namespace
+   — `--color-public-ink`, `--color-public-primary`, etc. (prefijo `public-*`, nunca pisa
+   `--color-ink`/`--color-primary` del panel) — más una regla scoped `.theme-public h1..h4` para que
+   Fira Sans solo aplique ahí. `Fira Sans` se carga vía `next/font/google` en
+   `src/app/(marketing)/layout.tsx` (nuevo) y en `src/app/(auth)/layout.tsx`; ambos envuelven su
+   contenido en `className="theme-public font-fira"`. El panel (`/dashboard`, `/admin`) nunca tiene
+   esa clase, así que sigue viéndose exactamente igual que antes — confirmado visualmente. Página
+   home (`(marketing)/page.tsx`) reescrita sección por sección con el tema nuevo y las 8 imágenes
+   generadas (`hero-home.png` en el hero, `paso-1/2/3-*.png` en "Cómo funciona",
+   `seccion-oscura-producto.png` en la banda CTA final, `cita-institucional-fondo.png` como textura
+   detrás de la cita). Se agregaron 3 secciones nuevas que no existían antes: bloque de cifras y cita
+   institucional (ambos con **marcadores de contenido** tipo `[XX%]`/`[Nombre]`, explícitamente
+   comentados en el código — reemplazar antes de publicar, no son datos reales) y un acordeón de FAQ
+   con copy real (no inventado) sobre el registro de morosidad, consentimiento y método de pago.
+   `miniatura-articulo.png` y `retrato-equipo.png` siguen sin usarse (no hay blog ni página de equipo
+   todavía). Formularios de `/login` y `/registro` también re-skinned (inputs/botón cuadrados).
+
+   **Generación de imágenes de marketing (agregado 2026-10-13, revisado 2026-10-14):**
+   `scripts/generate-marketing-images.mjs` (`npm run generate:images`) llama a la API de Kie.ai con
+   los 8 prompts del artboard "Imágenes" del artifact de arriba, y guarda el resultado en
+   `public/images/marketing/`. Requiere `KIE_API_KEY` en `.env.local` — nunca se commitea. El script
+   y la sección 22 del artifact deben mantenerse sincronizados a mano si se edita un prompt.
+   **Las 8 imágenes ya se generaron dos veces** y están en `public/images/marketing/` — aún no
+   referenciadas desde ningún componente, eso queda pendiente.
+   - **Motor: GPT Image 2.5, no Flux** (campo `engine` por prompt en el script, default
+     `"gpt-image"`). La primera tanda (2026-10-13) usó Flux Kontext Pro y salió demasiado "foto de
+     inmobiliaria" — Kevin la rechazó comparándola con 4 banners reales de bancos (recorte gráfico muy
+     cerrado, ángulo bajo/oblicuo extremo, edificio como patrón geométrico, gran espacio de cielo
+     limpio para texto). Se reescribieron `hero`, `seccion-oscura` y `blog` con esa dirección y se
+     regeneraron las 8 con GPT Image 2.5, que sigue instrucciones de encuadre con más fidelidad.
+     Flux sigue disponible (`engine: "flux"`) por si algún prompt puntual rinde mejor ahí.
+   - **Dos endpoints distintos de Kie.ai, mismo `/jobs/recordInfo` para consultar estado:** Flux usa
+     `POST /flux/kontext/generate` (body plano: `prompt`, `aspectRatio`, …); GPT Image usa el
+     endpoint genérico `POST /jobs/createTask` (body anidado: `{model, input: {prompt,
+     aspect_ratio, resolution}}`) — confirmado contra la API real, no solo la documentación.
+   - **Gotcha real:** el endpoint de Flux rechaza `aspectRatio: "3:2"` con "formatted incorrectly"
+     aunque está documentado como válido; el endpoint de GPT Image sí lo acepta — por eso el hero usa
+     `3:2` vía GPT Image en vez del `4:3` de la primera tanda.
 
 ## Quién usa el sistema
 
@@ -296,6 +377,65 @@ funciona para el inquilino, descrito abajo — no hace falta reinventarlo.):
 - **Sin probar de punta a punta:** el envío exitoso real (falta Resend). Sí se probó: generación sin
   duplicar, cálculo de fechas, que sin correo se marque "no enviada" con el motivo, los avisos, el
   botón "Ya se la envié", y el flujo completo de la vista previa.
+
+**Flujo de inicio rápido para visitantes anónimos** (agregado 2026-10-15, construido completo de
+punta a punta, probado manualmente en el navegador):
+- [x] El visitante puede empezar a registrar una propiedad **sin crear cuenta**. Home
+      (`src/app/(marketing)/inicio-rapido.tsx`) tiene un campo "Agrega la propiedad" que guarda el
+      texto en `sessionStorage` (`src/lib/draft-propiedad.ts`) y lleva a `/comenzar/propiedad`
+      (nueva ruta pública, vive dentro de `src/app/(marketing)/comenzar/propiedad/` para heredar
+      Fira Sans/`theme-public` del layout de marketing aunque la URL no tenga el grupo de rutas).
+      Ahí completa tipo de propiedad, Provincia/Cantón/Distrito y condiciones de pago — todo sigue
+      sin tocar el servidor. Al hacer clic en "Guardar y crear cuenta" (o "Inicie sesión" si ya
+      tiene cuenta), el draft se guarda y lo manda a `/registro?next=...` o `/login?next=...`.
+- [x] **Provincia/Cantón/Distrito son datos reales**, no texto libre: `provincia`/`distrito` son
+      columnas nuevas en `Propiedad` (`canton` ya existía) — ver migración de abajo. El catálogo
+      completo (7 provincias, 84 cantones, 494 distritos) vive en
+      `src/lib/ubicaciones-costa-rica.ts`, extraído el 2026-10-10 de la **División Territorial
+      Administrativa 2026 del IGN** (fuente oficial, URL del PDF en el comentario del archivo) vía
+      la API pública `ubicaciones-cr.ryze-cr.workers.dev` — no se inventó ni se tipeó a mano. El
+      cascadeo Provincia→Cantón→Distrito vive en `src/components/ubicacion-selects.tsx`
+      (`tema="public"` o `tema="panel"` según dónde se use) y ya está integrado tanto en
+      `/comenzar/propiedad` como en `/dashboard/propiedades/nueva`.
+- [x] `/registro` y `/login` aceptan `?next=` (validado en `siguientePaso()`, `lib/auth.ts` — solo
+      rutas propias que empiezan con `/`, nunca `//`, para evitar open redirect) y redirigen ahí en
+      vez de `/dashboard` siempre que esté presente, incluyendo en el camino de error. El link
+      cruzado "¿Ya tiene cuenta?/¿Todavía no tiene cuenta?" entre ambas páginas preserva el `next`.
+- [x] `/dashboard/propiedades/nueva` (vía `nueva-propiedad-form.tsx`, extraído de `page.tsx` para
+      poder ser cliente sin convertir toda la página) lee el draft de `sessionStorage` al cargar y
+      pre-llena la sección de propiedad, dejando la de inquilino vacía — el arrendador recién
+      registrado retoma exactamente donde quedó como anónimo. El draft se limpia al enviar el
+      formulario (optimista: se limpia aunque el envío falle, es una limitación conocida y
+      aceptada). Esta pantalla **sigue con el tema del panel**, no con `theme-public`.
+- **Migración de esquema:** `provincia String?` y `distrito String?` agregados a `Propiedad` y ya
+  aplicados a la base real con `npm run db:push` (2026-10-15) — opcionales a nivel de BD para no
+  romper filas existentes, requeridos en los formularios nuevos.
+- **Gotcha real de implementación — `useSyncExternalStore`, no `useEffect` + `setState`:** leer el
+  draft de `sessionStorage` al montar con `useEffect(() => setDraft(leerDraft()), [])` dispara el
+  lint error `react-hooks/set-state-in-effect` de `eslint-config-next` (Compiler-era rule). El
+  arreglo correcto es `useDraftPropiedad()` (hook en `draft-propiedad.ts`) con
+  `useSyncExternalStore` — pero **`getSnapshot` debe devolver la misma referencia si el dato no
+  cambió** (`leerDraft()` cachea contra el string crudo de `sessionStorage`, si no, React tira
+  "getSnapshot should be cached to avoid an infinite loop" porque `JSON.parse` crea un objeto
+  nuevo en cada llamada). Además, pasar `defaultProvincia`/`defaultCanton`/`defaultDistrito` como
+  prop a `UbicacionSelects` no alcanza — su `useState` interno solo captura el valor inicial una
+  vez y no se actualiza cuando el draft resuelve después del primer render; hace falta forzar un
+  remount con `key={draft ? "con-draft" : "sin-draft"}` en el `<UbicacionSelects>` del padre.
+- **Otro gotcha real:** `prisma7.config.ts` usaba `import "dotenv/config"` a secas, que solo lee
+  `.env`, no `.env.local` (eso es una convención de Next.js, no de `dotenv`) — `prisma generate`
+  no lo necesitaba (no toca la BD) pero `prisma db push`/`prisma studio` sí, y fallaban con
+  "datasource.url property is required". Se corrigió a `config({ path: ".env.local" })` explícito.
+- **Y otro:** después de correr `prisma generate` con el schema nuevo, el servidor de desarrollo
+  que ya estaba corriendo seguía usando el cliente de Prisma viejo en memoria (no reconocía
+  `provincia`/`distrito`, tiraba `PrismaClientValidationError: Unknown argument`) — hace falta
+  reiniciar `next dev` después de regenerar el cliente, Turbopack no lo recoge solo.
+- **Probado de punta a punta en el navegador**, ambos caminos: creando cuenta nueva (bloqueado en
+  este entorno porque Supabase rechaza dominios de correo tipo `.local`/`example.com` como
+  inválidos — no es un bug del código, `/registro` ya hacía la misma llamada `auth.signUp()` antes
+  de este cambio) y con la cuenta de prueba existente vía login — el segundo caso sí se completó
+  entero: login → aterrizó en `/dashboard/propiedades/nueva?draft=1` pre-llenado → se completó el
+  inquilino → se guardó → se confirmó en la base real que `provincia`/`canton`/`distrito` quedaron
+  correctos → se borró la propiedad de prueba para no dejar datos falsos.
 
 ## Fuera de alcance (deliberado, no es una pantalla del artifact)
 

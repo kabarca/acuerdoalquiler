@@ -57,7 +57,12 @@ model Propiedad {
   arrendador   Arrendador    @relation(fields: [arrendadorId], references: [id], onDelete: Cascade)
   direccion    String
   tipo         TipoPropiedad @default(APARTAMENTO)
+  // provincia/canton/distrito: catálogo oficial IGN en lib/ubicaciones-costa-rica.ts.
+  // Opcionales a nivel de BD (como canton ya lo era) para no romper filas
+  // existentes; los formularios nuevos los piden como required.
+  provincia    String?
   canton       String?
+  distrito     String?
   creadoEn     DateTime      @default(now())
 
   inquilinos Inquilino[]

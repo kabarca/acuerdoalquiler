@@ -39,6 +39,22 @@
   --color-danger-bg: var(--danger-bg);
   --font-sans: var(--font-public-sans);
   --font-heading: var(--font-space-grotesk);
+
+  /* ── Tema del sitio público (home, login, registro) ──────────────────
+     Namespace propio (public-*) a propósito: nunca pisa ni reutiliza los
+     tokens del panel de arriba, para que no haya ambigüedad de cuál tema
+     aplica en qué archivo. Ver CLAUDE.md "Tono y posicionamiento de marca"
+     y la guía de estilo (artifact JPMorgan/Fira Sans) para el porqué. */
+  --color-public-ink: #101820;
+  --color-public-body: #31373d;
+  --color-public-muted: #55637a;
+  --color-public-primary: #1a7b99;
+  --color-public-primary-light: #2b9ab3;
+  --color-public-accent: #af8462;
+  --color-public-border: #d8d5cc;
+  --color-public-surface: #f3f1ea;
+  --color-public-bg: #ffffff;
+  --font-fira: var(--font-fira-sans);
 }
 
 html {
@@ -101,4 +117,14 @@ h2,
 h3,
 h4 {
   font-family: var(--font-heading);
+}
+
+/* El tema público pisa la fuente de encabezado solo dentro de su propio
+   wrapper (ver (marketing)/layout.tsx y (auth)/layout.tsx) — el panel
+   autenticado nunca tiene esta clase, así que sigue en Space Grotesk. */
+.theme-public h1,
+.theme-public h2,
+.theme-public h3,
+.theme-public h4 {
+  font-family: var(--font-fira-sans);
 }

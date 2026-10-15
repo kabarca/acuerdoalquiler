@@ -405,7 +405,7 @@ export default async function PropiedadDetallePage({
                   name="montoRenta"
                   type="number"
                   step="0.01"
-                  placeholder="Monto de renta (₡)"
+                  placeholder="Monto de alquiler (₡)"
                   required
                   className={inputClass}
                 />

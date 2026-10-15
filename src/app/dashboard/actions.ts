@@ -39,7 +39,9 @@ export async function crearPropiedadConInquilino(formData: FormData) {
 
   const direccion = formData.get("direccion") as string;
   const tipo = formData.get("tipo") as string;
+  const provincia = formData.get("provincia") as string;
   const canton = formData.get("canton") as string;
+  const distrito = formData.get("distrito") as string;
   const nombre = formData.get("nombre") as string;
   const email = formData.get("email") as string;
   const telefono = formData.get("telefono") as string;
@@ -51,7 +53,9 @@ export async function crearPropiedadConInquilino(formData: FormData) {
       arrendadorId: arrendador.id,
       direccion,
       tipo: tipo as "APARTAMENTO" | "CASA" | "LOCAL_COMERCIAL",
+      provincia: provincia || null,
       canton: canton || null,
+      distrito: distrito || null,
     },
   });
 
