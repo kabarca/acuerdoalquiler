@@ -1,3 +1,4 @@
+import { formatearMonto } from "@/lib/moneda";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { DatosTransferencia } from "@/components/datos-transferencia";
@@ -33,7 +34,7 @@ export default async function InvitacionPage({
     notFound();
   }
 
-  const monto = Number(inquilino.montoRenta).toLocaleString("es-CR");
+  const monto = formatearMonto(inquilino.montoRenta, inquilino.moneda);
   const { arrendador } = inquilino.propiedad;
 
   if (confirmado || inquilino.metodoPagoPreferido) {
@@ -65,7 +66,7 @@ export default async function InvitacionPage({
             <h1 className="text-[21px] font-semibold">Configure el pago de su arriendo</h1>
             <p className="text-sm leading-relaxed text-ink-soft">
               Su arrendador le ha invitado a registrar su método de pago para{" "}
-              <strong>{inquilino.propiedad.direccion}</strong> — ₡{monto} mensuales. Le llegará la
+              <strong>{inquilino.propiedad.direccion}</strong> — {monto} mensuales. Le llegará la
               factura por correo el día {inquilino.diaEnvio} de cada mes y la fecha máxima de pago es el
               día {inquilino.diaCobro}.
             </p>

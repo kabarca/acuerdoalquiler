@@ -1,3 +1,4 @@
+import { formatearMonto } from "@/lib/moneda";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getArrendadorActual } from "@/lib/auth";
@@ -112,7 +113,7 @@ export default async function PropiedadesPage() {
               )}
               <div className="flex items-center justify-between">
                 <span className="font-heading text-[17px] font-bold">
-                  ₡{inquilino ? Number(inquilino.montoRenta).toLocaleString("es-CR") : "—"}
+                  {inquilino ? formatearMonto(inquilino.montoRenta, inquilino.moneda) : "—"}
                   <span className="text-[12.5px] font-medium text-ink-faint">/mes</span>
                 </span>
                 <span className="text-[13.5px] font-semibold text-accent">Ver detalle</span>

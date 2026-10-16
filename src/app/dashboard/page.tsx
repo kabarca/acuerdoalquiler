@@ -1,3 +1,4 @@
+import { formatearMonto, sumarPorMoneda } from "@/lib/moneda";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getArrendadorActual } from "@/lib/auth";
@@ -74,14 +75,17 @@ export default async function PanelPage() {
       propiedadId: p.id,
       inquilino: inquilino.nombre,
       monto: inquilino.montoRenta.toString(),
+      moneda: inquilino.moneda,
       factura: inquilino.facturas[0] ?? null,
     })),
   );
 
-  const cobradoEsteMes = filas
-    .filter((f) => f.factura?.estado === "PAGADA")
-    .reduce((sum, f) => sum + Number(f.factura!.monto), 0);
-  const facturado = filas.reduce((sum, f) => sum + Number(f.monto), 0);
+  const cobradoEsteMes = sumarPorMoneda(
+    filas
+      .filter((f) => f.factura?.estado === "PAGADA")
+      .map((f) => ({ monto: f.factura!.monto, moneda: f.factura!.moneda })),
+  );
+  const facturado = sumarPorMoneda(filas.map((f) => ({ monto: f.monto, moneda: f.moneda })));
   const pendientes = filas.filter((f) => f.factura?.estado === "PENDIENTE").length;
   const vencidos = filas.filter((f) => f.factura?.estado === "ATRASADA").length;
 
@@ -162,10 +166,10 @@ export default async function PanelPage() {
         <div className="flex flex-col gap-2.5 rounded-[14px] border border-border bg-surface px-6 py-5.5">
           <span className="text-[13px] font-semibold text-ink-faint">Cobrado este mes</span>
           <span className="font-heading text-[26px] font-bold">
-            ₡{cobradoEsteMes.toLocaleString("es-CR")}
+            {cobradoEsteMes}
           </span>
           <span className="text-[12.5px] font-semibold text-ink-faint">
-            de ₡{facturado.toLocaleString("es-CR")} facturados
+            de {facturado} facturados
           </span>
         </div>
         <div className="flex flex-col gap-2.5 rounded-[14px] border border-border bg-surface px-6 py-5.5">
@@ -210,7 +214,7 @@ export default async function PanelPage() {
                 <tr key={i} className="border-t border-border text-[14.5px]">
                   <td className="px-5 py-4 font-semibold">{f.propiedad}</td>
                   <td className="px-5 py-4 text-ink-soft">{f.inquilino}</td>
-                  <td className="px-5 py-4 font-semibold">₡{Number(f.monto).toLocaleString("es-CR")}</td>
+                  <td className="px-5 py-4 font-semibold">{formatearMonto(f.monto, f.moneda)}</td>
                   <td className="px-5 py-4 text-ink-soft">
                     {f.factura ? f.factura.fechaVencimiento.toLocaleDateString("es-CR") : "—"}
                   </td>

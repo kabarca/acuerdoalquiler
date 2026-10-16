@@ -1,3 +1,4 @@
+import { formatearMonto } from "@/lib/moneda";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -33,8 +34,8 @@ export default async function MarcarMorosoPage({
           <div>
             <h1 className="text-[19px] font-semibold">Marcar a {primerNombre} como moroso(a)</h1>
             <p className="mt-1 text-[13.5px] leading-relaxed text-ink-soft">
-              Propiedad: {disputa.inquilino.propiedad.direccion} · Monto pendiente: ₡
-              {Number(disputa.factura.monto).toLocaleString("es-CR")}
+              Propiedad: {disputa.inquilino.propiedad.direccion} · Monto pendiente:{" "}
+              {formatearMonto(disputa.factura.monto, disputa.factura.moneda)}
             </p>
           </div>
         </div>

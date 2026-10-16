@@ -28,6 +28,7 @@ export async function GET() {
     "Inquilino",
     "Periodo",
     "Monto",
+    "Moneda",
     "Metodo",
     "Estado",
   ];
@@ -39,6 +40,7 @@ export async function GET() {
       f.inquilino.nombre,
       f.periodo,
       Number(f.monto).toString(),
+      f.moneda,
       f.metodoPago ?? "",
       f.estado,
     ]

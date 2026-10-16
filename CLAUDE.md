@@ -511,3 +511,12 @@ registro) para poder probar el sistema sin cuentas reales:
 El proyecto es un repositorio git local (`git init` hecho el 2026-09-15, no hay remoto configurado
 todavía). Hay un commit de respaldo justo antes del rediseño completo por si algo necesita
 recuperarse: `git log --oneline`.
+
+## Monedas, teléfono, fechas y eliminar propiedad
+
+- **Moneda por inquilino:** `Inquilino.moneda` (`CRC` | `USD`, por defecto `CRC`) y `Factura.moneda` (la factura hereda la del inquilino al generarse). Nunca escribir "₡" a mano: usar `formatearMonto(monto, moneda)` y `sumarPorMoneda(...)` de `src/lib/moneda.ts` (los totales de colones y dólares se muestran separados, jamás sumados). Los correos reciben el monto ya formateado con símbolo.
+- `CampoMonto` (`src/components/campo-monto.tsx`): selector Colones/Dólares + monto tal como lo escribe el usuario, con vista previa ("Se cobrarán ₡550 000 CRC cada mes"). Envía `montoRenta` (número limpio) y `moneda`. Un separador seguido de exactamente 3 dígitos cuenta como miles (`550.000` = 550000). Acepta `tema="public"` para el flujo anónimo `/comenzar/propiedad` (el draft guarda también `moneda`).
+- `CampoTelefono`: selector de código de país (Costa Rica +506 por defecto). Envía un solo campo `telefono` con formato `+506 8845 2210`; los teléfonos antiguos sin código se interpretan como Costa Rica.
+- `SelectorFecha`: calendario propio que reemplaza `<input type="date">` (fechas de contrato y prórroga). Envía `AAAA-MM-DD` en un campo oculto, igual que el input nativo.
+- `BotonEliminarPropiedad`: basurero con confirmación (se borran también inquilino y facturas por cascada).
+- Si `prisma db push` dice que falta `datasource.url`, exportar el `.env` antes: `set -a; . ./.env; set +a` (`prisma7.config.ts` solo lee `.env.local`).

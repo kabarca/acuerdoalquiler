@@ -79,3 +79,11 @@ export function IconShield(props: { className?: string }) {
     </svg>
   );
 }
+
+export function IconTrash(props: { className?: string }) {
+  return (
+    <svg {...props} width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 7h16" /><path d="M9.5 7V4.8c0-.4.3-.8.8-.8h3.4c.5 0 .8.4.8.8V7" /><path d="M6.2 7l.9 12.2c.1.9.8 1.8 1.8 1.8h6.2c1 0 1.7-.9 1.8-1.8L17.8 7" /><path d="M10 11v6M14 11v6" />
+    </svg>
+  );
+}

@@ -1,3 +1,4 @@
+import { formatearMonto } from "@/lib/moneda";
 import { prisma } from "@/lib/prisma";
 import { enviarFactura, intentarEnvio } from "@/lib/resend";
 
@@ -98,6 +99,7 @@ export async function procesarFacturacionAutomatica(ahora = new Date()): Promise
           inquilinoId: inquilino.id,
           periodo,
           monto: inquilino.montoRenta,
+          moneda: inquilino.moneda,
           fechaVencimiento: calcularFechaVencimiento(anio, mes, inquilino.diaEnvio, inquilino.diaCobro),
         },
       });
@@ -112,7 +114,7 @@ export async function procesarFacturacionAutomatica(ahora = new Date()): Promise
         paraEmail: inquilino.email,
         nombreInquilino: inquilino.nombre,
         direccionPropiedad: inquilino.propiedad.direccion,
-        monto: Number(factura.monto).toLocaleString("es-CR"),
+        monto: formatearMonto(factura.monto, factura.moneda),
         fechaVencimiento: formatearFecha(factura.fechaVencimiento),
         periodo,
         linkPago: `${baseUrl}/pagar/${factura.id}`,

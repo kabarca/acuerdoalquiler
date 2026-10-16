@@ -1,3 +1,4 @@
+import { sumarPorMoneda } from "@/lib/moneda";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
@@ -50,7 +51,7 @@ export default async function AdminMorososPage() {
             </thead>
             <tbody>
               {inquilinos.map((i) => {
-                const montoAtrasado = i.facturas.reduce((sum, f) => sum + Number(f.monto), 0);
+                const montoAtrasado = sumarPorMoneda(i.facturas.map((f) => ({ monto: f.monto, moneda: f.moneda })));
                 const moroso = i.disputas.length > 0;
                 return (
                   <tr key={i.id} className="border-t border-border text-sm">
@@ -65,7 +66,7 @@ export default async function AdminMorososPage() {
                     </td>
                     <td className="px-4.5 py-3.5">{i.facturas.length}</td>
                     <td className="px-4.5 py-3.5 font-semibold text-danger">
-                      ₡{montoAtrasado.toLocaleString("es-CR")}
+                      {montoAtrasado}
                     </td>
                     <td className="px-4.5 py-3.5">
                       <span

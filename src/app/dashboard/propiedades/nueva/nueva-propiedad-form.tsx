@@ -6,6 +6,10 @@ import { IconBuilding, IconUsers, IconCard } from "@/lib/icons";
 import { CamposFacturacion } from "@/components/campos-facturacion";
 import { UbicacionSelects } from "@/components/ubicacion-selects";
 import { useDraftPropiedad, limpiarDraft } from "@/lib/draft-propiedad";
+import { CampoTelefono } from "@/components/campo-telefono";
+import { CampoMonto } from "@/components/campo-monto";
+import { SelectorFecha } from "@/components/selector-fecha";
+import { monedaDe } from "@/lib/moneda";
 
 const inputClass =
   "w-full rounded-[10px] border-[1.5px] border-border bg-surface px-3.5 py-3 text-[15px] outline-none focus:border-primary";
@@ -95,7 +99,7 @@ export function NuevaPropiedadForm() {
           </div>
           <div className="flex flex-1 flex-col gap-1.5">
             <label className="text-[13px] font-semibold text-ink-soft">Teléfono</label>
-            <input name="telefono" placeholder="Ej. 8845 2210" className={inputClass} />
+            <CampoTelefono placeholder="Ej. 8845 2210" />
           </div>
         </div>
         <div className="flex flex-col gap-1.5">
@@ -109,22 +113,12 @@ export function NuevaPropiedadForm() {
 
       <section className="flex flex-col gap-5 rounded-2xl border border-border bg-surface p-7">
         <SectionTitle icon={<IconCard />}>Detalles del pago</SectionTitle>
-        <div className="flex gap-4">
-          <div className="flex flex-1 flex-col gap-1.5">
-            <label className="text-[13px] font-semibold text-ink-soft">
-              Monto mensual del arriendo
-            </label>
-            <input
-              name="montoRenta"
-              type="number"
-              step="0.01"
-              required
-              defaultValue={draft?.montoRenta ?? ""}
-              placeholder="₡ 550.000"
-              className={inputClass}
-            />
-          </div>
-        </div>
+        <CampoMonto
+          key={draft ? "con-draft" : "sin-draft"}
+          etiqueta="Monto mensual del arriendo"
+          defaultMonto={draft?.montoRenta ?? ""}
+          defaultMoneda={monedaDe(draft?.moneda)}
+        />
         <div className="flex flex-col gap-2">
           <p className="text-[13px] font-bold">Facturación automática</p>
           <p className="text-[12.5px] text-ink-faint">
@@ -137,13 +131,13 @@ export function NuevaPropiedadForm() {
             <label className="text-[13px] font-semibold text-ink-soft">
               Inicio de contrato (opcional)
             </label>
-            <input name="fechaInicioContrato" type="date" className={inputClass} />
+            <SelectorFecha name="fechaInicioContrato" />
           </div>
           <div className="flex flex-1 flex-col gap-1.5">
             <label className="text-[13px] font-semibold text-ink-soft">
               Fin de contrato (opcional)
             </label>
-            <input name="fechaFinContrato" type="date" className={inputClass} />
+            <SelectorFecha name="fechaFinContrato" />
           </div>
         </div>
       </section>

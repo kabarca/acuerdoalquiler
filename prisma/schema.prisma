@@ -80,6 +80,11 @@ enum MetodoPago {
 // salvo cuando el arrendador lo invita a configurar su propio método de
 // pago (ver InviteTenant / TenantOnboarding), momento en el que puede
 // autorizar compartir su historial de pago con otros arrendadores.
+enum Moneda {
+  CRC // colones
+  USD // dólares
+}
+
 model Inquilino {
   id                  String      @id @default(uuid())
   propiedadId         String
@@ -89,6 +94,7 @@ model Inquilino {
   telefono            String?
   cedula              String? // identifica al inquilino entre arrendadores para la búsqueda de reputación
   montoRenta          Decimal     @db.Decimal(10, 2)
+  moneda              Moneda      @default(CRC) // moneda en que se cobra el alquiler (las facturas la heredan)
   // Calendario de facturación que fija el arrendador (todos 1-28):
   // - diaGeneracion: día del mes en que el sistema crea la factura.
   // - diaEnvio: día del mes en que se le manda por correo al inquilino
@@ -166,6 +172,7 @@ model Factura {
   inquilino                Inquilino     @relation(fields: [inquilinoId], references: [id], onDelete: Cascade)
   periodo                  String // formato "YYYY-MM"
   monto                    Decimal       @db.Decimal(10, 2)
+  moneda                   Moneda        @default(CRC)
   fechaVencimiento         DateTime
   estado                   EstadoFactura @default(PENDIENTE)
   metodoPago               MetodoPago?

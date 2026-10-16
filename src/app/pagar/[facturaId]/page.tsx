@@ -1,3 +1,4 @@
+import { formatearMonto } from "@/lib/moneda";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { DatosTransferencia } from "@/components/datos-transferencia";
@@ -33,7 +34,7 @@ export default async function PagarFacturaPage({
 
   const { inquilino } = factura;
   const { arrendador } = inquilino.propiedad;
-  const monto = Number(factura.monto).toLocaleString("es-CR");
+  const monto = formatearMonto(factura.monto, factura.moneda);
 
   if (factura.estado === "PAGADA") {
     return (
@@ -62,7 +63,7 @@ export default async function PagarFacturaPage({
             </div>
             <div className="flex justify-between py-2.5 text-sm">
               <span className="text-ink-soft">Monto pagado</span>
-              <span className="font-heading font-bold">₡{monto}</span>
+              <span className="font-heading font-bold">{monto}</span>
             </div>
           </div>
         </div>
@@ -91,7 +92,7 @@ export default async function PagarFacturaPage({
             </div>
             <div className="flex justify-between border-b border-border py-2.5 text-sm">
               <span className="text-ink-soft">Monto</span>
-              <span className="font-semibold">₡{monto}</span>
+              <span className="font-semibold">{monto}</span>
             </div>
             <div className="flex justify-between border-b border-border py-2.5 text-sm">
               <span className="text-ink-soft">Comprobante</span>
@@ -119,7 +120,7 @@ export default async function PagarFacturaPage({
           <span className="text-[13px] font-semibold text-ink-faint">PAGAR ARRIENDO</span>
           <div className="mt-1.5 flex items-center justify-between">
             <span className="text-[15.5px] font-semibold">{inquilino.propiedad.direccion}</span>
-            <span className="font-heading text-xl font-bold">₡{monto}</span>
+            <span className="font-heading text-xl font-bold">{monto}</span>
           </div>
           <p className="mt-2 text-[13px] font-semibold text-warning">
             Fecha máxima de pago: {formatearFecha(factura.fechaVencimiento)}

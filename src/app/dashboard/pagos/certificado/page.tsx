@@ -1,3 +1,4 @@
+import { sumarPorMoneda, type Moneda } from "@/lib/moneda";
 import { prisma } from "@/lib/prisma";
 import { getArrendadorActual } from "@/lib/auth";
 import { BotonImprimir } from "./imprimir-boton";
@@ -21,16 +22,16 @@ export default async function CertificadoPage({
     orderBy: { pagadoEn: "asc" },
   });
 
-  const porPropiedad = new Map<string, { direccion: string; total: number; pagos: number }>();
+  const porPropiedad = new Map<string, { direccion: string; montos: { monto: number; moneda: Moneda }[]; pagos: number }>();
   for (const f of facturas) {
     const key = f.inquilino.propiedad.id;
-    const actual = porPropiedad.get(key) ?? { direccion: f.inquilino.propiedad.direccion, total: 0, pagos: 0 };
-    actual.total += Number(f.monto);
+    const actual = porPropiedad.get(key) ?? { direccion: f.inquilino.propiedad.direccion, montos: [], pagos: 0 };
+    actual.montos.push({ monto: Number(f.monto), moneda: f.moneda });
     actual.pagos += 1;
     porPropiedad.set(key, actual);
   }
 
-  const total = [...porPropiedad.values()].reduce((sum, p) => sum + p.total, 0);
+  const total = sumarPorMoneda([...porPropiedad.values()].flatMap((p) => p.montos));
 
   return (
     <div className="flex flex-col gap-6 px-11 py-9 print:px-0 print:py-0">
@@ -70,7 +71,7 @@ export default async function CertificadoPage({
               <tr key={p.direccion} className="border-b border-border text-sm">
                 <td className="py-2.5">{p.direccion}</td>
                 <td className="py-2.5">{p.pagos}</td>
-                <td className="py-2.5 text-right font-semibold">₡{p.total.toLocaleString("es-CR")}</td>
+                <td className="py-2.5 text-right font-semibold">{sumarPorMoneda(p.montos)}</td>
               </tr>
             ))}
             {porPropiedad.size === 0 && (
@@ -86,7 +87,7 @@ export default async function CertificadoPage({
               <td className="pt-3" colSpan={2}>
                 Total {year}
               </td>
-              <td className="pt-3 text-right font-heading text-base">₡{total.toLocaleString("es-CR")}</td>
+              <td className="pt-3 text-right font-heading text-base">{total}</td>
             </tr>
           </tfoot>
         </table>

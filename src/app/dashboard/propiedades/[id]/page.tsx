@@ -5,10 +5,13 @@ import { getArrendadorActual } from "@/lib/auth";
 import { CamposFacturacion } from "@/components/campos-facturacion";
 import { AvisoFacturaNoEnviada } from "@/components/aviso-factura";
 import { BotonCopiarEnlace } from "@/components/boton-copiar-enlace";
+import { BotonEliminarPropiedad } from "@/components/boton-eliminar-propiedad";
+import { CampoTelefono } from "@/components/campo-telefono";
+import { CampoMonto } from "@/components/campo-monto";
+import { formatearMonto } from "@/lib/moneda";
 import {
   crearInquilino,
   actualizarInquilino,
-  eliminarPropiedad,
   generarFacturaDePrueba,
   marcarFacturaAtrasadaDePrueba,
   abrirDisputaDePrueba,
@@ -111,12 +114,7 @@ export default async function PropiedadDetallePage({
               {facturaDelMes.fechaVencimiento.toLocaleDateString("es-CR", { day: "numeric", month: "short" })}
             </span>
           )}
-          <form action={eliminarPropiedad}>
-            <input type="hidden" name="propiedadId" value={propiedad.id} />
-            <button type="submit" className="text-xs text-ink-faint hover:text-danger">
-              Eliminar propiedad
-            </button>
-          </form>
+          <BotonEliminarPropiedad propiedadId={propiedad.id} direccion={propiedad.direccion} />
         </div>
       </div>
 
@@ -156,7 +154,7 @@ export default async function PropiedadDetallePage({
                 <div className="flex flex-col gap-2.5 border-t border-border pt-2.5 text-[13.5px]">
                   <div className="flex justify-between">
                     <span className="text-ink-faint">Monto mensual</span>
-                    <span className="font-semibold">₡{Number(inquilino.montoRenta).toLocaleString("es-CR")}</span>
+                    <span className="font-semibold">{formatearMonto(inquilino.montoRenta, inquilino.moneda)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-ink-faint">Se genera la factura</span>
@@ -222,14 +220,10 @@ export default async function PropiedadDetallePage({
                     <input type="hidden" name="inquilinoId" value={inquilino.id} />
                     <input name="nombre" defaultValue={inquilino.nombre} required className={inputClass} />
                     <input name="email" type="email" defaultValue={inquilino.email} required className={inputClass} />
-                    <input name="telefono" defaultValue={inquilino.telefono ?? ""} placeholder="Teléfono" className={inputClass} />
-                    <input
-                      name="montoRenta"
-                      type="number"
-                      step="0.01"
-                      defaultValue={inquilino.montoRenta.toString()}
-                      required
-                      className={inputClass}
+                    <CampoTelefono defaultValue={inquilino.telefono ?? ""} placeholder="Teléfono" />
+                    <CampoMonto
+                      defaultMonto={inquilino.montoRenta.toString()}
+                      defaultMoneda={inquilino.moneda}
                     />
                     <CamposFacturacion
                       compacto
@@ -400,15 +394,8 @@ export default async function PropiedadDetallePage({
                 <input type="hidden" name="propiedadId" value={propiedad.id} />
                 <input name="nombre" placeholder="Nombre completo" required className={inputClass} />
                 <input name="email" type="email" placeholder="Correo" required className={inputClass} />
-                <input name="telefono" placeholder="Teléfono (opcional)" className={inputClass} />
-                <input
-                  name="montoRenta"
-                  type="number"
-                  step="0.01"
-                  placeholder="Monto de alquiler (₡)"
-                  required
-                  className={inputClass}
-                />
+                <CampoTelefono placeholder="Teléfono (opcional)" />
+                <CampoMonto />
                 <CamposFacturacion compacto />
                 <button
                   type="submit"
@@ -444,7 +431,7 @@ export default async function PropiedadDetallePage({
                 {inquilino.facturas.map((f) => (
                   <tr key={f.id} className="border-t border-border text-sm">
                     <td className="px-4.5 py-3.5">{f.periodo}</td>
-                    <td className="px-4.5 py-3.5 font-semibold">₡{Number(f.monto).toLocaleString("es-CR")}</td>
+                    <td className="px-4.5 py-3.5 font-semibold">{formatearMonto(f.monto, f.moneda)}</td>
                     <td className="px-4.5 py-3.5 text-ink-soft">
                       {f.metodoPago ? METODO_LABEL[f.metodoPago] : "—"}
                     </td>

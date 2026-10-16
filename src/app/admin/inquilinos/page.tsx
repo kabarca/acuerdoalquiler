@@ -1,3 +1,4 @@
+import { formatearMonto } from "@/lib/moneda";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
@@ -50,7 +51,7 @@ export default async function AdminInquilinosPage() {
                     </td>
                     <td className="px-4.5 py-3.5 text-ink-soft">{i.propiedad.direccion}</td>
                     <td className="px-4.5 py-3.5 text-ink-soft">{i.propiedad.arrendador.nombre}</td>
-                    <td className="px-4.5 py-3.5">₡{Number(i.montoRenta).toLocaleString("es-CR")}</td>
+                    <td className="px-4.5 py-3.5">{formatearMonto(i.montoRenta, i.moneda)}</td>
                     <td className="px-4.5 py-3.5">
                       <div className="flex flex-wrap gap-1.5">
                         {!i.activo && (

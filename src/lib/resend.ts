@@ -90,7 +90,7 @@ export async function enviarFactura(params: {
           <span style="color:${INK_SOFT};">Propiedad</span><span style="font-weight:600;">${params.direccionPropiedad}</span>
         </div>
         <div style="display:flex; justify-content:space-between; padding:8px 0; font-size:16px;">
-          <span style="font-weight:700;">Total a pagar</span><span style="font-weight:700;">₡${params.monto}</span>
+          <span style="font-weight:700;">Total a pagar</span><span style="font-weight:700;">${params.monto}</span>
         </div>
       </div>
       <a href="${params.linkPago}" style="display:block; margin-top:20px; background:${PRIMARY}; color:#fff; border-radius:10px; padding:15px; text-align:center; font-weight:700; font-size:15px; text-decoration:none;">
@@ -128,7 +128,7 @@ export async function enviarRecordatorio(params: {
         su arrendador.
       </p>
       <div style="background:${WARNING_BG}; border-radius:10px; padding:16px 18px; margin-top:12px;">
-        <span style="font-weight:700; font-size:18px;">₡${params.monto}</span>
+        <span style="font-weight:700; font-size:18px;">${params.monto}</span>
       </div>
       <a href="${params.linkPago}" style="display:block; margin-top:20px; background:${PRIMARY}; color:#fff; border-radius:10px; padding:14px; text-align:center; font-weight:700; font-size:14.5px; text-decoration:none;">
         Pagar ahora
@@ -167,7 +167,7 @@ export async function avisarArrendadorAtraso(params: {
       </p>
       <div style="background:${DANGER_BG}; border-radius:10px; padding:16px 18px; margin-top:12px; display:flex; flex-direction:column; gap:8px;">
         <div style="display:flex; justify-content:space-between; font-size:14px;">
-          <span>Monto pendiente</span><span style="font-weight:700;">₡${params.monto}</span>
+          <span>Monto pendiente</span><span style="font-weight:700;">${params.monto}</span>
         </div>
         <div style="display:flex; justify-content:space-between; font-size:14px;">
           <span>Venció el</span><span style="font-weight:600;">${params.fechaVencimiento}</span>
@@ -196,7 +196,7 @@ export async function enviarInvitacion(params: {
       <h1 style="font-size:19px; margin:0 0 6px;">Configure el pago de su arriendo</h1>
       <p style="color:${INK_SOFT}; font-size:14.5px; line-height:1.6;">
         Hola ${params.nombreInquilino}, su arrendador le ha invitado a registrar su método de pago
-        para <strong>${params.direccionPropiedad}</strong> — ₡${params.monto} mensuales. Registre su
+        para <strong>${params.direccionPropiedad}</strong> — ${params.monto} mensuales. Registre su
         cuenta bancaria o tarjeta para activarlo.
       </p>
       <a href="${params.linkInvitacion}" style="display:block; margin-top:20px; background:${PRIMARY}; color:#fff; border-radius:10px; padding:15px; text-align:center; font-weight:700; font-size:15px; text-decoration:none;">

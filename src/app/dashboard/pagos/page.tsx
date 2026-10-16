@@ -1,3 +1,4 @@
+import { formatearMonto, sumarPorMoneda } from "@/lib/moneda";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getArrendadorActual } from "@/lib/auth";
@@ -57,7 +58,7 @@ export default async function PagosPage({
   });
 
   const pagadas = facturas.filter((f) => f.estado === "PAGADA");
-  const cobradoTotal = pagadas.reduce((sum, f) => sum + Number(f.monto), 0);
+  const cobradoTotal = sumarPorMoneda(pagadas.map((f) => ({ monto: f.monto, moneda: f.moneda })));
 
   return (
     <div className="flex flex-col gap-6 px-11 py-8">
@@ -82,7 +83,7 @@ export default async function PagosPage({
           <p className="text-[13px] font-semibold text-ink-faint">
             Cobrado {rangoActivo === "anio" ? `en ${new Date().getFullYear()}` : "en el periodo"}
           </p>
-          <p className="mt-1.5 font-heading text-2xl font-bold">₡{cobradoTotal.toLocaleString("es-CR")}</p>
+          <p className="mt-1.5 font-heading text-2xl font-bold">{cobradoTotal}</p>
         </div>
         <div className="rounded-[14px] border border-border bg-surface px-5.5 py-5">
           <p className="text-[13px] font-semibold text-ink-faint">Transacciones</p>
@@ -135,7 +136,7 @@ export default async function PagosPage({
                   </td>
                   <td className="px-4.5 py-3.5 font-semibold">{f.inquilino.propiedad.direccion}</td>
                   <td className="px-4.5 py-3.5 text-ink-soft">{f.inquilino.nombre}</td>
-                  <td className="px-4.5 py-3.5 font-semibold">₡{Number(f.monto).toLocaleString("es-CR")}</td>
+                  <td className="px-4.5 py-3.5 font-semibold">{formatearMonto(f.monto, f.moneda)}</td>
                   <td className="px-4.5 py-3.5 text-ink-soft">{f.metodoPago ? METODO_LABEL[f.metodoPago] : "—"}</td>
                   <td className="px-4.5 py-3.5">
                     <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${ESTADO_TONO[f.estado]}`}>

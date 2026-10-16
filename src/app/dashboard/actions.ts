@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { calcularFechaVencimiento, enteroDia, hoyCostaRica, periodoDe } from "@/lib/facturacion";
 import { enviarInvitacion, intentarEnvio } from "@/lib/resend";
 import { crearYEnviarVerificacion } from "@/lib/verificacion-inquilino";
+import { formatearMonto, monedaDe } from "@/lib/moneda";
 
 function revalidarPanel() {
   revalidatePath("/dashboard", "layout");
@@ -46,6 +47,7 @@ export async function crearPropiedadConInquilino(formData: FormData) {
   const email = formData.get("email") as string;
   const telefono = formData.get("telefono") as string;
   const montoRenta = formData.get("montoRenta") as string;
+  const moneda = monedaDe(formData.get("moneda"));
   const dias = diasDeFacturacion(formData);
 
   const propiedad = await prisma.propiedad.create({
@@ -66,6 +68,7 @@ export async function crearPropiedadConInquilino(formData: FormData) {
       email,
       telefono: telefono || null,
       montoRenta,
+      moneda,
       ...dias,
       fechaInicioContrato: fechaOpcional(formData, "fechaInicioContrato"),
       fechaFinContrato: fechaOpcional(formData, "fechaFinContrato"),
@@ -87,6 +90,7 @@ export async function crearInquilino(formData: FormData) {
   const email = formData.get("email") as string;
   const telefono = formData.get("telefono") as string;
   const montoRenta = formData.get("montoRenta") as string;
+  const moneda = monedaDe(formData.get("moneda"));
   const dias = diasDeFacturacion(formData);
 
   const inquilino = await prisma.inquilino.create({
@@ -96,6 +100,7 @@ export async function crearInquilino(formData: FormData) {
       email,
       telefono: telefono || null,
       montoRenta,
+      moneda,
       ...dias,
       fechaInicioContrato: fechaOpcional(formData, "fechaInicioContrato"),
       fechaFinContrato: fechaOpcional(formData, "fechaFinContrato"),
@@ -126,6 +131,7 @@ export async function actualizarInquilino(formData: FormData) {
   const email = formData.get("email") as string;
   const telefono = formData.get("telefono") as string;
   const montoRenta = formData.get("montoRenta") as string;
+  const moneda = monedaDe(formData.get("moneda"));
   const dias = diasDeFacturacion(formData);
 
   await prisma.inquilino.update({
@@ -135,6 +141,7 @@ export async function actualizarInquilino(formData: FormData) {
       email,
       telefono: telefono || null,
       montoRenta,
+      moneda,
       ...dias,
       fechaInicioContrato: fechaOpcional(formData, "fechaInicioContrato"),
       fechaFinContrato: fechaOpcional(formData, "fechaFinContrato"),
@@ -192,6 +199,7 @@ export async function generarFacturaDePrueba(formData: FormData) {
       inquilinoId,
       periodo,
       monto: inquilino.montoRenta,
+      moneda: inquilino.moneda,
       fechaVencimiento,
     },
   });
@@ -244,7 +252,7 @@ export async function invitarInquilino(formData: FormData) {
       paraEmail: actualizado.email,
       nombreInquilino: actualizado.nombre,
       direccionPropiedad: propiedad.direccion,
-      monto: Number(actualizado.montoRenta).toLocaleString("es-CR"),
+      monto: formatearMonto(actualizado.montoRenta, actualizado.moneda),
       linkInvitacion: `${baseUrl}/invitacion/${actualizado.id}`,
     }),
   );

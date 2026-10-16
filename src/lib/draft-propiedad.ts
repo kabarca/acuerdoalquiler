@@ -16,6 +16,7 @@ export type DraftPropiedad = {
   canton?: string;
   distrito?: string;
   montoRenta?: string;
+  moneda?: "CRC" | "USD";
   diaCobro?: string;
 };
 

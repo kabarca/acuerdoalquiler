@@ -1,3 +1,4 @@
+import { formatearMonto } from "@/lib/moneda";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -126,7 +127,7 @@ export default async function DisputaPage({
           <div className="flex flex-col gap-2 rounded-[10px] bg-bg px-4.5 py-4 text-sm">
             <div className="flex justify-between">
               <span className="text-ink-soft">Monto pendiente</span>
-              <span className="font-heading font-bold">₡{Number(factura.monto).toLocaleString("es-CR")}</span>
+              <span className="font-heading font-bold">{formatearMonto(factura.monto, factura.moneda)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-ink-soft">Venció el</span>

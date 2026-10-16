@@ -1,3 +1,4 @@
+import { formatearMonto } from "@/lib/moneda";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getArrendadorActual } from "@/lib/auth";
@@ -49,7 +50,7 @@ export default async function ConfirmarPagoPage({
             </div>
             <div className="flex justify-between">
               <span className="text-ink-soft">Monto reportado</span>
-              <span className="font-heading font-bold">₡{Number(factura.monto).toLocaleString("es-CR")}</span>
+              <span className="font-heading font-bold">{formatearMonto(factura.monto, factura.moneda)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-ink-soft">Enviado el</span>

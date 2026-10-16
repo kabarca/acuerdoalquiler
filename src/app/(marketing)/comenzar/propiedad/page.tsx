@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { guardarDraft, useDraftPropiedad, type DraftPropiedad } from "@/lib/draft-propiedad";
 import { UbicacionSelects } from "@/components/ubicacion-selects";
+import { CampoMonto } from "@/components/campo-monto";
+import { monedaDe } from "@/lib/moneda";
 
 const DIAS = Array.from({ length: 28 }, (_, i) => i + 1);
 // A dónde vuelve el visitante después de crear cuenta o iniciar sesión —
@@ -45,6 +47,7 @@ export default function ComenzarPropiedadPage() {
       canton: String(fd.get("canton") ?? ""),
       distrito: String(fd.get("distrito") ?? ""),
       montoRenta: String(fd.get("montoRenta") ?? ""),
+      moneda: monedaDe(fd.get("moneda")),
       diaCobro: String(fd.get("diaCobro") ?? ""),
     };
     guardarDraft(nuevo);
@@ -123,16 +126,13 @@ export default function ComenzarPropiedadPage() {
           <section className="flex flex-col gap-5 border border-public-border p-7">
             <h2 className="text-lg font-semibold text-public-ink">Condiciones de pago</h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="flex flex-col gap-1.5">
-                <label className={labelClass}>Monto mensual del arriendo</label>
-                <input
-                  name="montoRenta"
-                  type="number"
-                  step="0.01"
-                  required
-                  defaultValue={draft?.montoRenta ?? ""}
-                  placeholder="₡ 550.000"
-                  className={inputClass}
+              <div className="sm:col-span-2">
+                <CampoMonto
+                  key={draft ? "con-draft" : "sin-draft"}
+                  tema="public"
+                  etiqueta="Monto mensual del arriendo"
+                  defaultMonto={draft?.montoRenta ?? ""}
+                  defaultMoneda={monedaDe(draft?.moneda)}
                 />
               </div>
               <div className="flex flex-col gap-1.5">

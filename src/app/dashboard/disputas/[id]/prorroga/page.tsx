@@ -1,3 +1,5 @@
+import { formatearMonto } from "@/lib/moneda";
+import { SelectorFecha } from "@/components/selector-fecha";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -39,8 +41,8 @@ export default async function ProrrogaPage({
           <div>
             <h1 className="text-[19px] font-semibold">Otorgar prórroga a {primerNombre}</h1>
             <p className="mt-1 text-[13.5px] text-ink-soft">
-              Venció el {disputa.factura.fechaVencimiento.toLocaleDateString("es-CR", { day: "numeric", month: "long" })} · ₡
-              {Number(disputa.factura.monto).toLocaleString("es-CR")} pendientes
+              Venció el {disputa.factura.fechaVencimiento.toLocaleDateString("es-CR", { day: "numeric", month: "long" })} ·{" "}
+              {formatearMonto(disputa.factura.monto, disputa.factura.moneda)} pendientes
             </p>
           </div>
         </div>
@@ -50,13 +52,7 @@ export default async function ProrrogaPage({
 
           <div className="flex flex-col gap-1.5">
             <label className="text-[13px] font-semibold text-ink-soft">Nueva fecha límite</label>
-            <input
-              type="date"
-              name="nuevaFechaVencimiento"
-              defaultValue={aInputDate(sugerida)}
-              required
-              className="w-full rounded-[10px] border-[1.5px] border-border px-3.5 py-3 text-[15px] outline-none focus:border-primary"
-            />
+            <SelectorFecha name="nuevaFechaVencimiento" defaultValue={aInputDate(sugerida)} required />
           </div>
 
           <div className="flex flex-col gap-1.5">
