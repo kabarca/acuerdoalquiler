@@ -9,6 +9,7 @@ import { calcularFechaVencimiento, enteroDia, hoyCostaRica, periodoDe } from "@/
 import { enviarInvitacion, intentarEnvio } from "@/lib/resend";
 import { crearYEnviarVerificacion } from "@/lib/verificacion-inquilino";
 import { formatearMonto, monedaDe } from "@/lib/moneda";
+import type { ResultadoCorreo } from "@/lib/resultado-correo";
 
 function revalidarPanel() {
   revalidatePath("/dashboard", "layout");
@@ -221,7 +222,7 @@ export async function marcarFacturaAtrasadaDePrueba(formData: FormData) {
   revalidarPanel();
 }
 
-export async function invitarInquilino(formData: FormData) {
+export async function invitarInquilino(_anterior: ResultadoCorreo, formData: FormData): Promise<ResultadoCorreo> {
   const arrendador = await getArrendadorActual();
 
   const propiedadId = formData.get("propiedadId") as string;
@@ -264,10 +265,12 @@ export async function invitarInquilino(formData: FormData) {
   }
 
   revalidarPanel();
-  redirect(`/dashboard/propiedades/${propiedadId}`);
+  return envio.ok
+    ? { ok: true, mensaje: `Invitación enviada a ${actualizado.email}. Si no la ve, revise la carpeta de spam.` }
+    : { ok: false, mensaje: `No se pudo enviar la invitación: ${envio.error}` };
 }
 
-export async function enviarVerificacionIdentidad(formData: FormData) {
+export async function enviarVerificacionIdentidad(_anterior: ResultadoCorreo, formData: FormData): Promise<ResultadoCorreo> {
   const arrendador = await getArrendadorActual();
   const propiedadId = formData.get("propiedadId") as string;
 
@@ -281,10 +284,12 @@ export async function enviarVerificacionIdentidad(formData: FormData) {
     throw new Error("Esta propiedad todavía no tiene inquilino — regístrelo primero.");
   }
 
-  await crearYEnviarVerificacion(inquilino.id);
+  const envio = await crearYEnviarVerificacion(inquilino.id);
 
   revalidarPanel();
-  redirect(`/dashboard/propiedades/${propiedadId}`);
+  return envio.ok
+    ? { ok: true, mensaje: `Correo enviado a ${inquilino.email}. Si no lo ve, revise la carpeta de spam.` }
+    : { ok: false, mensaje: `No se pudo enviar el correo: ${envio.error}` };
 }
 
 export async function abrirDisputaDePrueba(formData: FormData) {

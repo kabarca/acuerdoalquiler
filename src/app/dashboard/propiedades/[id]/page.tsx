@@ -6,6 +6,7 @@ import { CamposFacturacion } from "@/components/campos-facturacion";
 import { AvisoFacturaNoEnviada } from "@/components/aviso-factura";
 import { BotonCopiarEnlace } from "@/components/boton-copiar-enlace";
 import { BotonEliminarPropiedad } from "@/components/boton-eliminar-propiedad";
+import { BotonEnviarCorreo } from "@/components/boton-enviar-correo";
 import { CampoTelefono } from "@/components/campo-telefono";
 import { CampoMonto } from "@/components/campo-monto";
 import { formatearMonto } from "@/lib/moneda";
@@ -253,18 +254,16 @@ export default async function PropiedadDetallePage({
                 <p className="text-[13px] leading-relaxed text-ink-soft">
                   Envíe a su inquilino un enlace para que registre su método de pago directamente.
                 </p>
-                <form action={invitarInquilino} className="flex flex-col gap-2.5">
-                  <input type="hidden" name="propiedadId" value={propiedad.id} />
-                  <input type="hidden" name="montoRenta" value={inquilino.montoRenta.toString()} />
-                  <input type="hidden" name="diaCobro" value={inquilino.diaCobro} />
-                  <input type="hidden" name="email" value={inquilino.email} />
-                  <button
-                    type="submit"
-                    className="rounded-[9px] bg-primary py-2.75 text-center text-[13.5px] font-bold text-white hover:bg-primary-dark"
-                  >
-                    {inquilino.invitacionEnviadaEn ? "Reenviar invitación" : "Enviar invitación"}
-                  </button>
-                </form>
+                <BotonEnviarCorreo
+                  accion={invitarInquilino}
+                  etiqueta={inquilino.invitacionEnviadaEn ? "Reenviar invitación" : "Enviar invitación"}
+                  campos={{
+                    propiedadId: propiedad.id,
+                    montoRenta: inquilino.montoRenta.toString(),
+                    diaCobro: String(inquilino.diaCobro),
+                    email: inquilino.email,
+                  }}
+                />
                 {inquilino.invitacionEnviadaEn && (
                   <p className="text-[12px] text-ink-faint">
                     Enviada el {inquilino.invitacionEnviadaEn.toLocaleDateString("es-CR")}.
@@ -340,15 +339,12 @@ export default async function PropiedadDetallePage({
                   </>
                 )}
 
-                <form action={enviarVerificacionIdentidad}>
-                  <input type="hidden" name="propiedadId" value={propiedad.id} />
-                  <button
-                    type="submit"
-                    className="w-full rounded-[9px] border-[1.5px] border-border py-2.75 text-center text-[13.5px] font-bold text-ink-soft hover:border-primary hover:text-primary"
-                  >
-                    {verificacion ? "Generar enlace nuevo y reenviar" : "Crear y enviar enlace"}
-                  </button>
-                </form>
+                <BotonEnviarCorreo
+                  accion={enviarVerificacionIdentidad}
+                  variante="borde"
+                  etiqueta={verificacion ? "Generar enlace nuevo y reenviar" : "Crear y enviar enlace"}
+                  campos={{ propiedadId: propiedad.id }}
+                />
               </div>
 
               {!facturaDelMes ? (
