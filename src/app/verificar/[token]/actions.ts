@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { after } from "next/server";
 import { createWorker } from "tesseract.js";
 import { normalizarImagen } from "@/lib/normalizar-imagen";
 
@@ -49,18 +50,6 @@ export async function procesarVerificacion(
   const cedulaBytes = cedulaNormalizada.buffer;
   const selfieBytes = selfieNormalizada.buffer;
 
-  let textoExtraido = "";
-  try {
-    // cachePath en /tmp: en Vercel el resto del disco es de solo lectura y el
-    // idioma descargado no se podía guardar.
-    const worker = await createWorker("spa", 1, { cachePath: "/tmp" });
-    const { data } = await worker.recognize(cedulaBytes);
-    textoExtraido = data.text.trim();
-    await worker.terminate();
-  } catch {
-    // El OCR es un plus informativo — si falla, la verificación se guarda igual.
-  }
-
   await prisma.verificacionIdentidad.update({
     where: { id: verificacion.id },
     data: {
@@ -69,11 +58,31 @@ export async function procesarVerificacion(
       cedulaFotoTipo: cedulaNormalizada.tipo,
       selfieFotoBytes: selfieBytes,
       selfieFotoTipo: selfieNormalizada.tipo,
-      textoExtraidoCedula: textoExtraido || null,
       rostrosCoinciden: coincideRaw === "true" ? true : coincideRaw === "false" ? false : null,
       distanciaRostros: distanciaRaw ? Number(distanciaRaw) : null,
       completadoEn: new Date(),
     },
+  });
+
+  // El OCR tarda (descarga el idioma y lee la imagen) y es solo informativo:
+  // se hace DESPUÉS de responder, para que el inquilino no espere. Si falla,
+  // la verificación ya quedó guardada.
+  after(async () => {
+    try {
+      // cachePath en /tmp: en Vercel el resto del disco es de solo lectura.
+      const worker = await createWorker("spa", 1, { cachePath: "/tmp" });
+      const { data } = await worker.recognize(cedulaBytes);
+      await worker.terminate();
+      const texto = data.text.trim();
+      if (texto) {
+        await prisma.verificacionIdentidad.update({
+          where: { id: verificacion.id },
+          data: { textoExtraidoCedula: texto },
+        });
+      }
+    } catch {
+      // Sin OCR la verificación sigue siendo válida.
+    }
   });
 
   return { ok: true };

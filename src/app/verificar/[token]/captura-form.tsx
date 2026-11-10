@@ -66,7 +66,17 @@ export function CapturaForm({
       formData.set("distancia", String(resultado.distancia));
     }
 
-    const res = await procesarVerificacion(formData);
+    // Si el servidor no responde en un tiempo razonable, no se deja la pantalla
+    // cargando para siempre: se avisa y se puede reintentar.
+    const res = await Promise.race([
+      procesarVerificacion(formData).catch(() => ({ ok: false as const, error: "No se pudo enviar. Revise su conexión e intente de nuevo." })),
+      new Promise<{ ok: false; error: string }>((resolver) =>
+        setTimeout(
+          () => resolver({ ok: false, error: "El envío está tardando demasiado. Revise su conexión e intente de nuevo." }),
+          60_000,
+        ),
+      ),
+    ]);
     if (res.ok) {
       setPaso("listo");
     } else {
@@ -141,6 +151,7 @@ export function CapturaForm({
           <div className="flex flex-col items-center gap-3 py-8 text-center">
             <div className="h-9 w-9 animate-spin rounded-full border-[3px] border-primary-light border-t-primary" />
             <p className="text-[14px] font-semibold text-ink-soft">Comparando las fotos…</p>
+            <p className="text-xs text-ink-faint">Puede tardar unos segundos.</p>
           </div>
         )}
 

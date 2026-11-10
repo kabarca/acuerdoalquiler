@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { CapturaForm } from "./captura-form";
 
+// La Server Action de este formulario guarda las fotos y lee la cédula (OCR);
+// la duración por defecto de Vercel se queda corta con fotos de celular.
+export const maxDuration = 60;
+
 function Logo() {
   return (
     <div className="flex items-center gap-2.5">

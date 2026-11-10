@@ -71,30 +71,77 @@ function aCanvas(img: HTMLImageElement, grados: number): HTMLCanvasElement {
 }
 
 // El rostro de una cédula es pequeño dentro de la foto y el detector rápido
-// (Tiny) lo pierde con la configuración por defecto. Se prueba con varias
-// resoluciones de análisis, un umbral más permisivo y, si hace falta, la foto
-// girada. Se devuelve el primer rostro que aparece.
-async function detectarRostro(faceapi: FaceApi, img: HTMLImageElement, girosPermitidos: number[]) {
-  for (const grados of girosPermitidos) {
-    const canvas = aCanvas(img, grados);
-    for (const inputSize of [416, 512, 608]) {
-      const opciones = new faceapi.TinyFaceDetectorOptions({ inputSize, scoreThreshold: 0.3 });
-      const resultado = await faceapi.detectSingleFace(canvas, opciones).withFaceLandmarks().withFaceDescriptor();
-      if (resultado) return resultado;
+// (Tiny) lo pierde con la configuración por defecto. Se prueban pocas
+// combinaciones (resolución de análisis + giro de la foto), de la más probable
+// a la menos, con un umbral permisivo. En un celular modesto cada intento puede
+// tardar segundos, así que hay un tiempo límite total: si se agota, se sigue
+// sin comparación automática y el arrendador revisa las fotos a mano. Nunca debe
+// quedarse "cargando" para siempre.
+type Intento = { grados: number; inputSize: number };
+
+const INTENTOS_DOCUMENTO: Intento[] = [
+  { grados: 0, inputSize: 416 },
+  { grados: 0, inputSize: 608 },
+  { grados: 90, inputSize: 512 },
+  { grados: 270, inputSize: 512 },
+];
+const INTENTOS_SELFIE: Intento[] = [
+  { grados: 0, inputSize: 416 },
+  { grados: 0, inputSize: 608 },
+  { grados: 90, inputSize: 512 },
+];
+
+async function detectarRostro(faceapi: FaceApi, img: HTMLImageElement, intentos: Intento[], limite: number) {
+  let canvas: HTMLCanvasElement | null = null;
+  let gradosActual = -1;
+  for (const { grados, inputSize } of intentos) {
+    if (Date.now() > limite) return null;
+    if (grados !== gradosActual) {
+      canvas = aCanvas(img, grados);
+      gradosActual = grados;
     }
+    const opciones = new faceapi.TinyFaceDetectorOptions({ inputSize, scoreThreshold: 0.3 });
+    const resultado = await faceapi.detectSingleFace(canvas!, opciones).withFaceLandmarks().withFaceDescriptor();
+    if (resultado) return resultado;
   }
   return null;
 }
 
+function conTiempoLimite<T>(promesa: Promise<T>, ms: number, valorSiSeAcaba: T): Promise<T> {
+  return new Promise((resolver) => {
+    const reloj = setTimeout(() => resolver(valorSiSeAcaba), ms);
+    promesa.then(
+      (v) => {
+        clearTimeout(reloj);
+        resolver(v);
+      },
+      () => {
+        clearTimeout(reloj);
+        resolver(valorSiSeAcaba);
+      },
+    );
+  });
+}
+
+const SIN_COMPARACION: ResultadoMatch = { coincide: null, distancia: null, sinRostro: true };
+const TIEMPO_MODELOS_MS = 25_000; // bajar ~7 MB de modelos con datos móviles
+const TIEMPO_ANALISIS_MS = 20_000;
+
 export async function compararRostros(documentoFile: File, selfieFile: File): Promise<ResultadoMatch> {
+  const faceapi = await conTiempoLimite(cargarModelos(), TIEMPO_MODELOS_MS, null);
+  if (!faceapi) return SIN_COMPARACION;
+  return conTiempoLimite(analizar(faceapi, documentoFile, selfieFile), TIEMPO_ANALISIS_MS + 5_000, SIN_COMPARACION);
+}
+
+async function analizar(faceapi: FaceApi, documentoFile: File, selfieFile: File): Promise<ResultadoMatch> {
   try {
-    const faceapi = await cargarModelos();
     const [imgDocumento, imgSelfie] = await Promise.all([archivoAImagen(documentoFile), archivoAImagen(selfieFile)]);
+    const limite = Date.now() + TIEMPO_ANALISIS_MS;
 
     // De a uno (no en paralelo): analizar las dos a la vez agota la memoria
     // de la GPU en celulares modestos.
-    const resDocumento = await detectarRostro(faceapi, imgDocumento, [0, 90, 270, 180]);
-    const resSelfie = await detectarRostro(faceapi, imgSelfie, [0, 90, 270]);
+    const resDocumento = await detectarRostro(faceapi, imgDocumento, INTENTOS_DOCUMENTO, limite);
+    const resSelfie = await detectarRostro(faceapi, imgSelfie, INTENTOS_SELFIE, limite);
 
     if (!resDocumento || !resSelfie) {
       return {
