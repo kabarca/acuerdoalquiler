@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { prisma } from "@/lib/prisma";
+import { urlBase } from "@/lib/config";
 import { enviarVerificacionIdentidad, intentarEnvio } from "@/lib/resend";
 
 export const DIAS_VIGENCIA_ENLACE = 7;
@@ -39,7 +40,7 @@ export async function crearYEnviarVerificacion(inquilinoId: string) {
     },
   });
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const baseUrl = urlBase();
   const resultado = await intentarEnvio(() =>
     enviarVerificacionIdentidad({
       paraEmail: inquilino.email,

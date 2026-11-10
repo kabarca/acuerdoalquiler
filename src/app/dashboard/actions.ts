@@ -9,6 +9,7 @@ import { calcularFechaVencimiento, enteroDia, hoyCostaRica, periodoDe } from "@/
 import { enviarInvitacion, intentarEnvio } from "@/lib/resend";
 import { crearYEnviarVerificacion } from "@/lib/verificacion-inquilino";
 import { formatearMonto, monedaDe } from "@/lib/moneda";
+import { urlBase } from "@/lib/config";
 import type { ResultadoCorreo } from "@/lib/resultado-correo";
 
 function revalidarPanel() {
@@ -245,7 +246,7 @@ export async function invitarInquilino(_anterior: ResultadoCorreo, formData: For
     data: { email, montoRenta, diaCobro },
   });
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const baseUrl = urlBase();
 
   // "Enviada el…" solo se guarda si el correo de verdad salió.
   const envio = await intentarEnvio(() =>

@@ -6,3 +6,11 @@ export const SOPORTE_WHATSAPP_NUMERO = "50600000000";
 export function linkWhatsAppSoporte(mensaje: string) {
   return `https://wa.me/${SOPORTE_WHATSAPP_NUMERO}?text=${encodeURIComponent(mensaje)}`;
 }
+
+// Dirección pública del sitio, la que llevan los links de los correos (pago,
+// verificación, invitación). Por defecto es el sitio real: un link a
+// "localhost" no abre en el celular de quien recibe el correo. Para probar con
+// otra dirección se puede definir NEXT_PUBLIC_APP_URL.
+export function urlBase() {
+  return (process.env.NEXT_PUBLIC_APP_URL || "https://www.acuerdoalquiler.com").replace(/\/+$/, "");
+}

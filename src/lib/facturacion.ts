@@ -1,4 +1,5 @@
 import { formatearMonto } from "@/lib/moneda";
+import { urlBase } from "@/lib/config";
 import { prisma } from "@/lib/prisma";
 import { enviarFactura, intentarEnvio } from "@/lib/resend";
 
@@ -64,7 +65,7 @@ const TAMANO_LOTE = 10;
 export async function procesarFacturacionAutomatica(ahora = new Date()): Promise<ResultadoFacturacion> {
   const { anio, mes, dia } = hoyCostaRica(ahora);
   const periodo = periodoDe(anio, mes);
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const baseUrl = urlBase();
   const inicioDeHoy = new Date(Date.UTC(anio, mes - 1, dia, 6));
   const resultado: ResultadoFacturacion = {
     fecha: `${periodo}-${String(dia).padStart(2, "0")}`,
