@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { procesarVerificacion } from "./actions";
 import { compararRostros, type ResultadoMatch } from "@/lib/comparar-rostros";
-import { convertirSiEsHeic } from "@/lib/heic-cliente";
+import { prepararFoto } from "@/lib/imagen-cliente";
 
 type Paso = "inicio" | "cedula" | "selfie" | "procesando" | "confirmar" | "enviando" | "listo" | "error";
 
@@ -29,7 +29,7 @@ export function CapturaForm({
   const primerNombre = nombreInquilino.split(" ")[0];
 
   async function elegirCedula(file: File) {
-    const convertido = await convertirSiEsHeic(file);
+    const convertido = await prepararFoto(file);
     setCedulaFile(convertido);
     setCedulaPreview(URL.createObjectURL(convertido));
     setPaso("selfie");
@@ -37,7 +37,7 @@ export function CapturaForm({
 
   async function elegirSelfie(file: File) {
     setPaso("procesando");
-    const convertido = await convertirSiEsHeic(file);
+    const convertido = await prepararFoto(file);
     setSelfieFile(convertido);
     setSelfiePreview(URL.createObjectURL(convertido));
 
@@ -164,9 +164,24 @@ export function CapturaForm({
             </div>
 
             {resultado?.sinRostro ? (
-              <div className="rounded-[10px] bg-bg px-4 py-3.5 text-[13px] text-ink-soft">
-                No pudimos comparar las fotos automáticamente. No hay problema — su arrendador las revisará
-                directamente.
+              <div className="rounded-[10px] bg-warning-bg px-4 py-3.5 text-[13px] leading-relaxed text-warning">
+                {resultado.sinRostroCedula && !resultado.sinRostroSelfie ? (
+                  <>
+                    <strong>No logramos ver el rostro en la foto de la cédula.</strong> Tómela de nuevo con la
+                    cédula completa, bien iluminada y sin reflejos. Si prefiere, puede enviarla así y su arrendador
+                    la revisará.
+                  </>
+                ) : resultado.sinRostroSelfie && !resultado.sinRostroCedula ? (
+                  <>
+                    <strong>No logramos ver su rostro en la selfie.</strong> Tómela de nuevo de frente, con buena
+                    luz y sin gorra ni lentes oscuros. Si prefiere, puede enviarla así y su arrendador la revisará.
+                  </>
+                ) : (
+                  <>
+                    No pudimos comparar las fotos automáticamente. Puede tomarlas de nuevo con buena luz, o enviarlas
+                    así: su arrendador las revisará directamente.
+                  </>
+                )}
               </div>
             ) : (
               <div

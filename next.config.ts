@@ -8,6 +8,13 @@ const nextConfig: NextConfig = {
   // (conversión de fotos HEIC de iPhone) carga un WASM (libheif-js) de forma
   // parecida, así que se deja igual por si acaso.
   serverExternalPackages: ["tesseract.js", "heic-convert"],
+  // Las fotos de la verificación (cédula + selfie) viajan en una Server Action.
+  // El límite por defecto es 1 MB y hacía fallar el envío. Las fotos se reducen
+  // en el navegador (lib/imagen-cliente.ts); este margen cubre ambas fotos y
+  // queda por debajo de los 4,5 MB que aceptan las funciones de Vercel.
+  experimental: {
+    serverActions: { bodySizeLimit: "4mb" },
+  },
 };
 
 export default nextConfig;

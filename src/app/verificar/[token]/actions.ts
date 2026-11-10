@@ -51,7 +51,9 @@ export async function procesarVerificacion(
 
   let textoExtraido = "";
   try {
-    const worker = await createWorker("spa");
+    // cachePath en /tmp: en Vercel el resto del disco es de solo lectura y el
+    // idioma descargado no se podía guardar.
+    const worker = await createWorker("spa", 1, { cachePath: "/tmp" });
     const { data } = await worker.recognize(cedulaBytes);
     textoExtraido = data.text.trim();
     await worker.terminate();
