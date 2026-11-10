@@ -1,15 +1,9 @@
 import Link from "next/link";
-import { Fira_Sans } from "next/font/google";
+import { firaSans } from "@/lib/fuentes";
 
 // Mismo tema público que (marketing) — ver CLAUDE.md "Tono y
-// posicionamiento de marca". Instancia propia de Fira Sans porque Next no
-// comparte el loader de next/font entre layouts de distintos route groups.
-const firaSans = Fira_Sans({
-  variable: "--font-fira-sans",
-  weight: ["300", "400", "500", "600", "700", "800"],
-  subsets: ["latin"],
-});
-
+// posicionamiento de marca". La Fira Sans sale de lib/fuentes.ts (archivos
+// locales, no se descarga de Google al compilar).
 const BENEFICIOS = [
   "Cobro por transferencia bancaria",
   "Recordatorios y alertas automáticas",
